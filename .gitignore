@@ -1,0 +1,11 @@
+.env
+.my_env
+/vscode/
+*.sqlite3
+__pycache__/
+*.pyc
+db.sqlite3
+/staticfiles/
+/static/
+/media/
+.DS_Store   

@@ -1,0 +1,23 @@
+{% load static %}
+<header class="bg-black text-white p-4">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center">
+            <div class="bg-white rounded-full p-2">
+                <img src="{% static 'kelhub/logo.png' %}" alt="KELHUB Logo" class="h-8 w-auto"/>
+            </div>
+            <span class="ml-3 text-xl font-bold">KELHUB</span>
+        </div>
+        
+        <div class="flex items-center space-x-3">
+            <a href="/" class="hidden sm:inline hover:text-gray-300 bg-gray-800 px-4 py-2 rounded-sm border-2 border-yellow-500">Home</a>
+            <button onclick="openLoginModal()" 
+                    class="bg-yellow-500 hover:bg-yellow-600 text-black font-medium py-2 px-4 rounded-full transition duration-300 text-sm">
+                Login
+            </button>
+            <button onclick="openSignupModal()" 
+                    class="bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-full transition duration-300 border border-yellow-500 text-sm">
+                Register
+            </button>
+        </div>
+    </div>
+</header>

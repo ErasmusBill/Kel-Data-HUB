@@ -1,0 +1,86 @@
+{% extends 'kelhub/base.html' %}
+{% load static %}
+{% block content %}
+<section class="bg-[url('{% static 'kelhub/gem-1.png' %}')] bg-cover bg-center h-100 size-full flex items-center justify-center">
+    <div class="bg-gray-100 bg-opacity-10 p-8 rounded-lg text-center mt-28 shadow-lg">
+        <h1 class="text-4xl font-bold text-gray-800 mb-4 mt-8">Welcome to KELHUB</h1>
+        <p class="text-lg text-gray-800">Your one-stop solution for data plans and connectivity.</p>
+    </div>
+</section>
+
+<div class="bg-white border-2 border-yellow-300 rounded-lg shadow-lg mx-auto my-8 flex flex-wrap flex-col md:flex-row items-stretch justify-center max-w-5xl p-6 gap-4">
+    <div class="bg-yellow-400 text-white rounded-lg p-6 flex-1 min-w-[250px] hover:bg-yellow-500 transition-all duration-300 hover:shadow-xl">
+        <div class="flex items-center gap-3 mb-3">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z"/>
+            </svg>
+            <p class="text-2xl font-bold">5% Discount</p>
+        </div>
+        <p class="text-base leading-relaxed">
+            Get an instant 5% discount on your first order! Sign up today and start saving on all your data needs.
+        </p>
+    </div>
+
+    <div class="bg-red-400 text-white rounded-lg p-6 flex-1 min-w-[250px] hover:bg-red-500 transition-all duration-300 hover:shadow-xl">
+        <div class="flex items-center gap-3 mb-3">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"/>
+            </svg>
+            <p class="text-2xl font-bold">Track Orders</p>
+        </div>
+        <p class="text-base leading-relaxed">
+            Monitor your purchases in real-time with our intuitive dashboard. Stay updated on every transaction instantly.
+        </p>
+    </div>
+
+    <div class="bg-black text-white rounded-lg p-6 flex-1 min-w-[250px] hover:bg-gray-800 transition-all duration-300 hover:shadow-xl">
+        <div class="flex items-center gap-3 mb-3">
+            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+            </svg>
+            <p class="text-2xl font-bold">Become an Agent</p>
+        </div>
+        <p class="text-base leading-relaxed">
+            Join our network of agents and earn attractive commissions. Build your business with KELHUB today!
+        </p>
+    </div>
+</div>
+
+<a href="/packages" class="block mx-auto w-max">
+    <h1 class="text-3xl font-bold text-center bg-yellow-400 text-white px-12 py-4 mt-8 rounded-full mb-8 hover:bg-yellow-500 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+        Explore Our Packages
+    </h1>
+</a>
+
+<main class="bg-black flex flex-col md:flex-row items-center justify-center p-8 gap-8 flex-wrap">
+    <div class="bg-white p-4 rounded-xl shadow-lg max-w-xs flex flex-col items-center transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+        <img src="{% static 'kelhub/mtn-1.jpeg' %}" alt="MTN Packages" class="h-80 w-full object-cover rounded-lg"/>
+        <a href="/packages" class="mt-6 w-max">
+            <h2 class="text-lg font-bold text-center bg-yellow-400 text-white px-8 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 shadow-md hover:shadow-lg">
+                View MTN Packages
+            </h2>
+        </a>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow-lg max-w-xs flex flex-col items-center transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+        <img src="{% static 'kelhub/at.png' %}" alt="AirtelTigo Packages" class="h-80 w-full object-cover rounded-lg"/>
+        <a href="/packages" class="mt-6 w-max">
+            <h2 class="text-lg font-bold text-center bg-red-400 text-white px-8 py-3 rounded-full hover:bg-red-500 transition-all duration-300 shadow-md hover:shadow-lg">
+                View AirtelTigo Packages
+            </h2>
+        </a> 
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow-lg max-w-xs flex flex-col items-center transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+        <img src="{% static 'kelhub/tele.jpeg' %}" alt="Telecel Packages" class="h-80 w-full object-cover rounded-lg"/>
+        <a href="/packages" class="mt-6 w-max">
+            <h2 class="text-lg font-bold text-center bg-yellow-400 text-white px-8 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 shadow-md hover:shadow-lg">
+                View Telecel Packages
+            </h2>
+        </a>
+    </div>
+</main>
+
+{% endblock %}
