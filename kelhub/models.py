@@ -1,7 +1,8 @@
+from encodings.punycode import T
 from django.conf import settings
 from django.db import models
 import uuid
-from django.utils import timezone
+from users.models import CustomUser
 
 class Network(models.Model):
     """
@@ -26,7 +27,7 @@ class DataBundle(models.Model):
     network = models.ForeignKey(Network, on_delete=models.CASCADE, related_name="bundles")
     plan_code = models.CharField(max_length=50)
     capacity = models.CharField(max_length=20, help_text="e.g., 5GB")
-    mb = models.CharField(max_length=20, help_text="MB equivalent")
+    mb = models.CharField(max_length=20, help_text="MB equivalent",default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     is_active = models.BooleanField(default=True)
     last_updated = models.DateTimeField(auto_now=True)
