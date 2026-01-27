@@ -54,10 +54,10 @@
     </h1>
 </a>
 
-<main class="bg-black flex flex-col md:flex-row items-center justify-center p-8 gap-8 flex-wrap">
+<<main class="bg-black flex flex-col md:flex-row items-center justify-center p-8 gap-8 flex-wrap">
     <div class="bg-white p-4 rounded-xl shadow-lg max-w-xs flex flex-col items-center transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
         <img src="{% static 'kelhub/mtn-1.jpeg' %}" alt="MTN Packages" class="h-80 w-full object-cover rounded-lg"/>
-        <a href="{% url 'get_all_data_plans' network='mtn' %}" class="mt-6 w-max">
+        <a href="{% url 'kelhub:data_plans' network='MTN' %}" class="mt-6 w-max">
             <h2 class="text-lg font-bold text-center bg-yellow-400 text-white px-8 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 shadow-md hover:shadow-lg">
                 View MTN Packages
             </h2>
@@ -66,7 +66,7 @@
 
     <div class="bg-white p-4 rounded-xl shadow-lg max-w-xs flex flex-col items-center transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
         <img src="{% static 'kelhub/at.png' %}" alt="AirtelTigo Packages" class="h-80 w-full object-cover rounded-lg"/>
-        <a href="{% url 'data_plans' network='airteltigo' %}" class="mt-6 w-max">
+        <a href="{% url 'kelhub:data_plans' network='AIRTELTIGO' %}" class="mt-6 w-max">
             <h2 class="text-lg font-bold text-center bg-red-400 text-white px-8 py-3 rounded-full hover:bg-red-500 transition-all duration-300 shadow-md hover:shadow-lg">
                 View AirtelTigo Packages
             </h2>
@@ -75,8 +75,8 @@
 
     <div class="bg-white p-4 rounded-xl shadow-lg max-w-xs flex flex-col items-center transform hover:scale-105 transition-all duration-300 hover:shadow-2xl">
         <img src="{% static 'kelhub/tele.jpeg' %}" alt="Telecel Packages" class="h-80 w-full object-cover rounded-lg"/>
-        <a href="{% url 'data_plans' network='telecel' %}" class="mt-6 w-max">
-            <h2 class="text-lg font-bold text-center bg-yellow-400 text-white px-8 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 shadow-md hover:shadow-lg">
+        <a href="{% url 'kelhub:data_plans' network='TELECEL' %}" class="mt-6 w-max">
+            <h2 class="text-lg font-bold text-center bg-black text-white px-8 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 shadow-md hover:shadow-lg">
                 View Telecel Packages
             </h2>
         </a>
