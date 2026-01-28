@@ -4,10 +4,13 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import timedelta
+import uuid
+from django.utils.crypto import get_random_string
 
 
 class BaseModel(models.Model):
     """Abstract base model with common fields"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -73,11 +76,19 @@ class ResetPasswordToken(BaseModel):
         
         return True, 'Token is valid'
     
+    def generate_token(self):
+        """Generate a unique token"""
+        return get_random_string(length=50)
+    
     def save(self, *args, **kwargs):
         """Set expiry to 1 hour from creation if not set"""
         if not self.expiry:
             self.expiry = timezone.now() + timedelta(hours=1)
         super().save(*args, **kwargs)
+    
+    
         
     def __str__(self):
         return f"Reset token for {self.user.username}"
+    
+    

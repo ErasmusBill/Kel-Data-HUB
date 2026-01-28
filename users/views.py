@@ -1,12 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404,resolve_url
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
-from .models import CustomUser, Profile
-
+from django.urls import reverse
+from .models import CustomUser, Profile, ResetPasswordToken
+from .utils import send_email
+from users.utils import send_email
+from django.urls import reverse
 
 @require_http_methods(["GET", "POST"])
 def create_user(request):
@@ -21,6 +24,10 @@ def create_user(request):
         
         if not all([username, first_name, last_name, email, password]):
             messages.error(request, "All fields are required")
+            return redirect("users:register")
+        
+        if len(password) < 8:
+            messages.error(request,"Password must be at least 8 Characters")
             return redirect("users:register")
         
         if CustomUser.objects.filter(username=username).exists():
@@ -64,15 +71,17 @@ def create_user(request):
     return render(request, 'kelhub/index.html')
 
 
-    return render(request, 'kelhub/index.html')
-
-
 @require_http_methods(["GET", "POST"])
 def login_user(request):
     """Handle user login"""
-    if request.user.is_authenticated:
-        return redirect("users:dashboard")  
     
+    # Checks if user if user is already authenticated or redirection
+    if request.user.is_authenticated:
+        if request.user.role == 'admin':
+            return redirect('users:admin-dashboard')
+        elif request.user.role == 'customer':
+            return redirect('users:dashboard')
+        
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
@@ -86,11 +95,11 @@ def login_user(request):
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
-            login(request, user)
+            login(request, user) 
             messages.success(request, f"Welcome back, {user.first_name}!")
             
         if user.role == 'admin': # type: ignore
-                return redirect("user:admin_dashboard")  
+                return redirect("user:admin-dashboard")  
         elif user.role == 'customer': # type: ignore
                 return redirect("users:dashboard")
             
@@ -143,7 +152,10 @@ def change_password(request):
         update_session_auth_hash(request, user)
         
         messages.success(request, "Password changed successfully!")
-        return redirect("users:dashboard") 
+        if user.role == 'admin':
+            return redirect('user:admin-dashboard')
+        elif user.role == 'customer':
+            return redirect('users:dashboard') 
     return render(request, 'users/change_password.html')
 
 
@@ -153,3 +165,183 @@ def logout_user(request):
     logout(request)
     messages.success(request, "You have been logged out successfully")
     return redirect("users:login")
+
+@login_required
+def update_user_profile(request, user_id):
+    """Update user profile information"""
+    
+    user = get_object_or_404(CustomUser, id=user_id)
+    
+    if request.user.id != user.id:
+        messages.error(request, "You can only edit your own profile")
+        return redirect("users:dashboard")
+    
+
+    profile, created = Profile.objects.get_or_create(user=user)
+    
+    if request.method == "POST":
+        full_name = request.POST.get("full_name", "").strip()
+        email = request.POST.get("email", "").strip()
+        
+        if not full_name:
+            messages.error(request, "Full name is required")
+            return redirect("users:edit_profile", user_id=user.id)
+        
+        if not email:
+            messages.error(request, "Email is required")
+            return redirect("users:edit_profile", user_id=user.id)
+        
+        if CustomUser.objects.filter(email=email).exclude(id=user.id).exists():
+            messages.error(request, "Email is already taken by another user")
+            return redirect("users:edit_profile", user_id=user.id)
+        
+        try:
+            user.validate_user_email(email)
+            
+            user.full_name = full_name
+            user.email = email
+            user.save()
+            
+            # Update profile fields
+            profile.phone_number = request.POST.get("phone_number", "").strip()
+            profile.address = request.POST.get("address", "").strip()
+            
+            if request.FILES.get("avatar"):
+                profile.avatar = request.FILES.get("avatar")
+            
+            profile.save()
+            
+            messages.success(request, "Profile updated successfully!")
+            return redirect("users:dashboard")
+            
+        except ValidationError as e:
+            error_message = e.messages[0] if hasattr(e, 'messages') else str(e)
+            messages.error(request, error_message)
+            return redirect("users:edit_profile", user_id=user.id)
+        except Exception as e:
+            messages.error(request, "An error occurred while updating your profile")
+            return redirect("users:edit_profile", user_id=user.id)
+    
+    
+    context = {
+        'user': user,
+        'profile': profile,
+    }
+    return render(request, 'users/edit_profile.html', context)
+
+@require_http_methods(["GET", "POST"])
+def reset_password_request(request):
+    """Handle password reset request"""
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        
+        if not email:
+            messages.error(request, "Email is required")
+            return redirect("users:reset_password_request")
+        
+        try:
+            
+            user = CustomUser.objects.get(email=email)
+            
+            ResetPasswordToken.objects.filter(user=user, is_used=False).update(is_used=True)
+            
+            reset_token = ResetPasswordToken.objects.create(user=user)
+            
+            reset_token.token = reset_token.generate_token()
+            reset_token.save()
+            
+    
+            reset_url = request.build_absolute_uri(
+                reverse('users:reset_password', kwargs={'token': reset_token.token})
+            )
+            
+           
+            context = {
+                'user': user,
+                'reset_url': reset_url,
+                'expiry_hours': 1,
+            }
+            
+           
+            send_email(
+                subject='Password Reset Request - KELHUB',
+                to_email=user.email,
+                template_name='users/password_reset_email.html',
+                context=context
+            )
+            
+            messages.success(request, "Password reset instructions have been sent to your email")
+            return redirect("users:login")
+            
+        except CustomUser.DoesNotExist:
+            messages.success(request, "If an account exists with that email, password reset instructions have been sent")
+            return redirect("users:login")
+        except Exception as e:
+            print(f"Error sending password reset email: {e}")  
+            messages.error(request, "An error occurred. Please try again later")
+            return redirect("users:reset_password_request")
+    
+
+    return render(request, 'users/reset_password_request.html')
+
+
+@require_http_methods(["GET", "POST"])
+def reset_password(request, token):
+    """Handle password reset with token"""
+    try:
+        reset_token = ResetPasswordToken.objects.get(token=token)
+        
+        is_valid, message = reset_token.is_valid()
+        if not is_valid:
+            messages.error(request, message)
+            return redirect("users:reset_password_request")
+        
+        if request.method == 'POST':
+            new_password = request.POST.get('new_password', '')
+            confirm_password = request.POST.get('confirm_password', '')
+            
+            if not new_password or not confirm_password:
+                messages.error(request, "Both password fields are required")
+                return redirect("users:reset_password", token=token)
+            
+            if new_password != confirm_password:
+                messages.error(request, "Passwords do not match")
+                return redirect("users:reset_password", token=token)
+            
+            if len(new_password) < 8:
+                messages.error(request,"Password must be at least 8 characters")
+            
+            try:
+                user = reset_token.user
+                user.validate_password(new_password)
+                
+                user.set_password(new_password)
+                user.save()
+                
+                # Mark token as used
+                reset_token.is_used = True
+                reset_token.save()
+                        
+                messages.success(request, "Password has been reset successfully. Please log in with your new password.")
+                return redirect("users:login")
+                
+            except ValidationError as e:
+                error_message = e.messages[0] if hasattr(e, 'messages') else str(e)
+                messages.error(request, error_message)
+                return redirect("users:reset_password", token=token)
+        
+        context = {'token': token}
+        return render(request, 'users/reset_password.html', context)
+        
+    except ResetPasswordToken.DoesNotExist:
+        messages.error(request, "Invalid or expired reset token")
+        return redirect("users:reset_password_request")
+    
+@login_required
+def admin_dashboard(request):
+    return render(request,"users/admin_dashboard.html")
+
+@login_required
+def user_dashboard(request):
+    return render(request,"users/user_dashboard.html")
+

@@ -82,3 +82,13 @@ def sync_data_bundles(network_key: str, network_obj) -> int:
     
     return synced_count
 
+def validate_phone_number(phone_number: str):
+    phone_number = phone_number.replace(" ", "").replace("-", "")
+    
+    if len(phone_number) == 13 and phone_number.startswith("+233"):
+        return phone_number
+        
+    elif len(phone_number) == 10 and phone_number.startswith("0"):
+        return "+233" + phone_number[1:]
+        
+    return False
