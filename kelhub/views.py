@@ -1,3 +1,4 @@
+import re
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
@@ -5,6 +6,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.urls import reverse
+from django.db.models import Q
 from decimal import Decimal, InvalidOperation
 from .models import Network, DataBundle, Order, TransactionLog, Wallet, WalletTransaction
 from .utils import (
@@ -20,12 +22,12 @@ def home(request):
 
 
 def data_plans_view(request, network):
-    """Display available data plans for a network"""
-    network_obj = get_object_or_404(Network, key=network, is_active=True)
+    """
+    Display available data plans for a network.
+    """
     
-    data_bundles = DataBundle.objects.filter(network=network_obj, is_active=True).order_by('price')
-    
-    
+    network_obj = get_object_or_404(Network,Q(key__iexact=network) | Q(name__icontains=network),is_active=True)
+    data_bundles = DataBundle.objects.filter(network=network_obj,is_active=True).order_by('price')
     wallet = None
     if request.user.is_authenticated:
         wallet, created = Wallet.objects.get_or_create(user=request.user)
@@ -44,7 +46,8 @@ def purchase_data_view(request, bundle_id):
     Handle data bundle purchase - SUPPORTS GUESTS AND LOGGED-IN USERS
     Payment Methods: Wallet (logged-in only) or Paystack (guests + logged-in)
     """
-    bundle = get_object_or_404(DataBundle.select_related('network'), id=bundle_id, is_active=True) # type: ignore
+    bundles = DataBundle.objects.filter(is_active=True).select_related('network')
+    bundle = get_object_or_404(DataBundle.objects.select_related('network'), id=bundle_id, is_active=True)
     
     
     wallet = None
@@ -84,11 +87,11 @@ def purchase_data_view(request, bundle_id):
                 messages.error(request, 'Please login to use wallet payment')
                 return redirect('kelhub:purchase_data', bundle_id=bundle_id)
             
-            if not wallet.can_purchase(bundle.price):
-                shortfall = bundle.price - wallet.balance
+            if not wallet.can_purchase(bundle.price): # type: ignore
+                shortfall = bundle.price - wallet.balance # type: ignore
                 messages.error(
                     request, 
-                    f'Insufficient balance. You need GH₵{bundle.price} but only have GH₵{wallet.balance}. '
+                    f'Insufficient balance. You need GH₵{bundle.price} but only have GH₵{wallet.balance}. ' # type: ignore
                     f'Please deposit at least GH₵{shortfall} more.'
                 )
                 return redirect('kelhub:deposit')
@@ -188,6 +191,7 @@ def purchase_data_view(request, bundle_id):
     
     context = {
         'bundle': bundle,
+        'bundles':bundles,
         'wallet': wallet,
         'is_guest': not request.user.is_authenticated,
     }
@@ -205,7 +209,7 @@ def paystack_callback(request):
         messages.error(request, 'Invalid payment reference')
         return redirect('kelhub:home')
     
-    # Get order from session
+    
     order_id = request.session.get('pending_order_id')
     
     if not order_id:
@@ -218,14 +222,13 @@ def paystack_callback(request):
         messages.error(request, 'Order not found')
         return redirect('kelhub:home')
     
-    # Verify payment with Paystack
+   
     verification = verify_paystack_payment(reference)
     
     if verification.get('status') == 'success' and verification.get('verified'):
-        # Payment successful
         verified_amount = verification.get('amount')
         
-        # Verify amount matches
+    
         if verified_amount != order.amount:
             order.status = 'failed'
             order.failure_reason = f"Amount mismatch: Expected {order.amount}, got {verified_amount}"
@@ -237,10 +240,10 @@ def paystack_callback(request):
         # Update order with payment info
         order.transaction_reference = reference
         order.api_response = verification # type: ignore
-        order.paid_from_wallet = False  # Paid via Paystack
+        order.paid_from_wallet = False  
         order.save()
         
-        # Process data purchase via DataMart API
+      
         success, api_message, response_data = order.process_api_purchase() # type: ignore
         
         if success:

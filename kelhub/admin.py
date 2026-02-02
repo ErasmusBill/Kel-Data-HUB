@@ -8,7 +8,6 @@ from .models import (
     WalletTransaction,
     Order,
     TransactionLog,
-    APIConfiguration,
     DatamartTransaction,
 )
 
@@ -223,12 +222,6 @@ class TransactionLogAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(APIConfiguration)
-class APIConfigurationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'base_url', 'is_active', 'timeout_seconds', 'created_at')
-    list_filter = ('is_active',)
-    search_fields = ('name', 'base_url')
-    ordering = ('-is_active', '-created_at')
 
 
 @admin.register(DatamartTransaction)

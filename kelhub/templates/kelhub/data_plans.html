@@ -2,13 +2,259 @@
 {% load static %}
 
 {% block content %}
+
+{# Set theme colors based on network - store in simple variables #}
 {% if 'MTN' in network.name|upper or 'YELLO' in network.key|upper %}
-    {% desc 'Theme: Yellow' %}{% with brand_from="yellow-500" brand_to="yellow-600" brand_text="yellow-500" brand_border="yellow-400" %}
+    {% with brand_from="yellow-500" brand_to="yellow-600" brand_text="yellow-500" brand_border="yellow-400" %}
+
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                {{ network.name }} Data Plans
+            </h1>
+            <p class="text-gray-400 text-lg">Choose the perfect data bundle for your needs</p>
+        </div>
+
+        {% comment %} <div class="bg-gradient-to-r from-{{ brand_from }} to-{{ brand_to }} rounded-2xl shadow-2xl p-8 mb-12 border border-{{ brand_border }}">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0">
+                    {% if network.logo %}
+                    <img src="{{ network.logo.url }}" alt="{{ network.name }}" class="w-16 h-16 rounded-full mr-4 bg-white p-2">
+                    {% endif %}
+                    <div>
+                        <h2 class="text-3xl font-bold text-white">{{ network.name }}</h2>
+                        <p class="text-white/80">Available Data Bundles</p>
+                    </div>
+                </div>
+                <div class="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3">
+                    <p class="text-white text-sm">Total Plans</p>
+                    <p class="text-3xl font-bold text-white">{{ data_bundles|length }}</p>
+                </div>
+            </div>
+        </div> {% endcomment %}
+
+        {% if data_bundles %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for bundle in data_bundles %}
+            <div class="bg-gray-800 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-700 overflow-hidden group">
+                
+                <div class="bg-gradient-to-r from-{{ brand_from }} to-{{ brand_to }} p-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-white font-semibold text-sm uppercase tracking-wide">
+                            {{ network.name }}
+                        </span>
+                        {% if bundle.is_active %}
+                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">Active</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <div class="text-center mb-6">
+                        <p class="text-5xl font-bold text-white mb-2">{{ bundle.capacity }}</p>
+                        {% if bundle.mb %}<p class="text-gray-400 text-sm">({{ bundle.mb }} MB)</p>{% endif %}
+                    </div>
+
+                    <div class="text-center mb-6">
+                        <p class="text-gray-400 text-sm mb-1">Price</p>
+                        <p class="text-3xl font-bold text-{{ brand_text }}">GH₵{{ bundle.price }}</p>
+                    </div>
+
+                    {% comment %} <div class="bg-gray-900 rounded-lg p-3 mb-4">
+                        <p class="text-gray-400 text-xs mb-1">Plan Code</p>
+                        {% comment %} <p class="text-white font-mono text-sm">{{ bundle.plan_code }}</p> {% endcomment %}
+                    {% comment %} </div> {% endcomment %} 
+
+                    <button class="w-full bg-gradient-to-r from-{{ brand_from }} to-{{ brand_to }} hover:brightness-110 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform group-hover:scale-105 shadow-lg">
+                        <a href="{% url 'kelhub:purchase_data' bundle.id %}">Purchase Now</a>
+                    </button>
+                </div>
+
+                {% comment %} <div class="bg-gray-900 px-6 py-3 border-t border-gray-700">
+                    <p class="text-gray-500 text-xs text-center">
+                        Last updated: {{ bundle.last_synced|date:"M d, Y" }}
+                    </p>
+                </div> {% endcomment %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-gray-800 rounded-xl shadow-xl p-12 text-center border border-gray-700">
+            <h3 class="text-2xl font-bold text-white mb-2">No Data Plans Available</h3>
+            <p class="text-gray-400">There are currently no active data plans for {{ network.name }}.</p>
+        </div>
+        {% endif %}
+
+        <div class="bg-gray-800 rounded-xl shadow-xl p-8 border border-gray-700 mt-12">
+            <h3 class="text-2xl font-bold text-white mb-6">How to Purchase</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="bg-{{ brand_from }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">1</span>
+                    </div>
+                    <h4 class="text-white font-semibold mb-2">Select Plan</h4>
+                    <p class="text-gray-400 text-sm">Choose the data bundle that fits your needs</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="bg-{{ brand_from }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">2</span>
+                    </div>
+                    <h4 class="text-white font-semibold mb-2">Enter Details</h4>
+                    <p class="text-gray-400 text-sm">Provide your phone number and payment information</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="bg-{{ brand_from }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">3</span>
+                    </div>
+                    <h4 class="text-white font-semibold mb-2">Confirm Purchase</h4>
+                    <p class="text-gray-400 text-sm">Review and complete your transaction securely</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    ::-webkit-scrollbar-track { 
+        background: #1f2937; 
+    }
+    ::-webkit-scrollbar-thumb { 
+        background: linear-gradient(to bottom, #{{ brand_from }}, #{{ brand_to }}); 
+        border-radius: 5px; 
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #{{ brand_from }};
+    }
+</style>
+
+    {% endwith %}
 {% elif 'TELECEL' in network.name|upper or 'AIRTEL' in network.name|upper %}
-    {% desc 'Theme: Red' %}{% with brand_from="red-500" brand_to="red-600" brand_text="red-500" brand_border="red-400" %}
+    {% with brand_from="red-500" brand_to="red-600" brand_text="red-500" brand_border="red-400" %}
+
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                {{ network.name }} Data Plans
+            </h1>
+            <p class="text-gray-400 text-lg">Choose the perfect data bundle for your needs</p>
+        </div>
+
+        {% comment %} <div class="bg-gradient-to-r from-{{ brand_from }} to-{{ brand_to }} rounded-2xl shadow-2xl p-8 mb-12 border border-{{ brand_border }}">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0">
+                    {% if network.logo %}
+                    <img src="{{ network.logo.url }}" alt="{{ network.name }}" class="w-16 h-16 rounded-full mr-4 bg-white p-2">
+                    {% endif %}
+                    <div>
+                        <h2 class="text-3xl font-bold text-white">{{ network.name }}</h2>
+                        <p class="text-white/80">Available Data Bundles</p>
+                    </div>
+                </div>
+                <div class="bg-white/20 backdrop-blur-sm rounded-lg px-6 py-3">
+                    <p class="text-white text-sm">Total Plans</p>
+                    <p class="text-3xl font-bold text-white">{{ data_bundles|length }}</p>
+                </div>
+            </div>
+        </div> {% endcomment %}
+
+        {% if data_bundles %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for bundle in data_bundles %}
+            <div class="bg-gray-800 rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-700 overflow-hidden group">
+                
+                <div class="bg-gradient-to-r from-{{ brand_from }} to-{{ brand_to }} p-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-white font-semibold text-sm uppercase tracking-wide">
+                            {{ network.name }}
+                        </span>
+                        {% if bundle.is_active %}
+                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">Active</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <div class="text-center mb-6">
+                        <p class="text-5xl font-bold text-white mb-2">{{ bundle.capacity }}</p>
+                        {% if bundle.mb %}<p class="text-gray-400 text-sm">({{ bundle.mb }} MB)</p>{% endif %}
+                    </div>
+
+                    <div class="text-center mb-6">
+                        <p class="text-gray-400 text-sm mb-1">Price</p>
+                        <p class="text-3xl font-bold text-{{ brand_text }}">GH₵{{ bundle.price }}</p>
+                    </div>
+
+                    
+                    <button class="w-full bg-gradient-to-r from-{{ brand_from }} to-{{ brand_to }} hover:brightness-110 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform group-hover:scale-105 shadow-lg">
+                        <a href="{% url 'kelhub:purchase_data' bundle.id %}">Purchase Now</a>
+                    </button>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-gray-800 rounded-xl shadow-xl p-12 text-center border border-gray-700">
+            <h3 class="text-2xl font-bold text-white mb-2">No Data Plans Available</h3>
+            <p class="text-gray-400">There are currently no active data plans for {{ network.name }}.</p>
+        </div>
+        {% endif %}
+
+        <div class="bg-gray-800 rounded-xl shadow-xl p-8 border border-gray-700 mt-12">
+            <h3 class="text-2xl font-bold text-white mb-6">How to Purchase</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="bg-{{ brand_from }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">1</span>
+                    </div>
+                    <h4 class="text-white font-semibold mb-2">Select Plan</h4>
+                    <p class="text-gray-400 text-sm">Choose the data bundle that fits your needs</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="bg-{{ brand_from }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">2</span>
+                    </div>
+                    <h4 class="text-white font-semibold mb-2">Enter Details</h4>
+                    <p class="text-gray-400 text-sm">Provide your phone number and payment information</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="bg-{{ brand_from }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">3</span>
+                    </div>
+                    <h4 class="text-white font-semibold mb-2">Confirm Purchase</h4>
+                    <p class="text-gray-400 text-sm">Review and complete your transaction securely</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    ::-webkit-scrollbar-track { 
+        background: #1f2937; 
+    }
+    ::-webkit-scrollbar-thumb { 
+        background: linear-gradient(to bottom, #{{ brand_from }}, #{{ brand_to }}); 
+        border-radius: 5px; 
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #{{ brand_from }};
+    }
+</style>
+
+    {% endwith %}
 {% else %}
-    {% desc 'Theme: Default Orange' %}{% with brand_from="orange-500" brand_to="orange-600" brand_text="orange-500" brand_border="orange-400" %}
-{% endif %}
+    {% with brand_from="orange-500" brand_to="orange-600" brand_text="orange-500" brand_border="orange-400" %}
 
 <div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
@@ -67,11 +313,11 @@
 
                     <div class="bg-gray-900 rounded-lg p-3 mb-4">
                         <p class="text-gray-400 text-xs mb-1">Plan Code</p>
-                        <p class="text-white font-mono text-sm">{{ bundle.plan_code }}</p>
+                        {% comment %} <p class="text-white font-mono text-sm">{{ bundle.plan_code }}</p> {% endcomment %}
                     </div>
 
                     <button class="w-full bg-gradient-to-r from-{{ brand_from }} to-{{ brand_to }} hover:brightness-110 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform group-hover:scale-105 shadow-lg">
-                        Purchase Now
+                        <a href="{% url 'kelhub:purchase_data' bundle.id %}">Purchase Now</a>
                     </button>
                 </div>
 
@@ -93,35 +339,49 @@
         <div class="bg-gray-800 rounded-xl shadow-xl p-8 border border-gray-700 mt-12">
             <h3 class="text-2xl font-bold text-white mb-6">How to Purchase</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {% for step, title, desc in steps %}
-                <div class="text-center">
-                    <div class="bg-{{ brand_from }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                        <span class="text-white text-2xl font-bold">{{ forloop.counter }}</span>
-                    </div>
-                    <h4 class="text-white font-semibold mb-2">{{ title }}</h4>
-                    <p class="text-gray-400 text-sm">{{ desc }}</p>
-                </div>
-                {% endfor %}
                 <div class="text-center">
                     <div class="bg-{{ brand_from }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                         <span class="text-white text-2xl font-bold">1</span>
                     </div>
                     <h4 class="text-white font-semibold mb-2">Select Plan</h4>
-                    <p class="text-gray-400 text-sm">Choose the bundle you need</p>
+                    <p class="text-gray-400 text-sm">Choose the data bundle that fits your needs</p>
                 </div>
+                
+                <div class="text-center">
+                    <div class="bg-{{ brand_from }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">2</span>
+                    </div>
+                    <h4 class="text-white font-semibold mb-2">Enter Details</h4>
+                    <p class="text-gray-400 text-sm">Provide your phone number and payment information</p>
                 </div>
+                
+                <div class="text-center">
+                    <div class="bg-{{ brand_from }} rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-2xl font-bold">3</span>
+                    </div>
+                    <h4 class="text-white font-semibold mb-2">Confirm Purchase</h4>
+                    <p class="text-gray-400 text-sm">Review and complete your transaction securely</p>
+                </div>
+            </div>
         </div>
 
     </div>
 </div>
 
 <style>
-    ::-webkit-scrollbar-track { background: #1f2937; }
+    ::-webkit-scrollbar-track { 
+        background: #1f2937; 
+    }
     ::-webkit-scrollbar-thumb { 
-        background: var(--brand-color, #{{ brand_from }}); 
+        background: linear-gradient(to bottom, #{{ brand_from }}, #{{ brand_to }}); 
         border-radius: 5px; 
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #{{ brand_from }};
     }
 </style>
 
-{% endwith %}{% endwith %}{% endwith %}{% endwith %}
+    {% endwith %}
+{% endif %}
+
 {% endblock %}

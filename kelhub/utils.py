@@ -18,10 +18,7 @@ PAYSTACK_BASE_URL = "https://api.paystack.co"
 
 
 
-def initialize_paystack_payment(
-    email: str,
-    phone_number:str,
-    amount: Decimal,callback_url: str,reference: Optional[str] = None,metadata: Optional[Dict] = None,channels: Optional[List[str]] = None) -> Dict:
+def initialize_paystack_payment(email: str,phone_number:str,amount: Decimal,callback_url: str,reference: Optional[str] = None,metadata: Optional[Dict] = None,channels: Optional[List[str]] = None) -> Dict:
     
     headers = {
         "Authorization": f"Bearer {PAYSTACK_SECRET_KEY}",
@@ -198,18 +195,11 @@ def get_data_plans(network: Optional[str] = None):
         return [] if network else {}
 
 
-def purchase_data(
-    phone_number: str,
-    network: str,
-    capacity: str,
-    order=None,
-    gateway: str = "wallet"
-) -> Tuple[bool, Dict]:
+def purchase_data(phone_number: str,network: str,capacity: str,order=None,gateway: str = "wallet") -> Tuple[bool, Dict]:
   
-    # Clean capacity
+   
     capacity_clean = str(capacity).replace("GB", "").replace("gb", "").strip()
     
-    # Build request payload
     payload = {
         "phoneNumber": phone_number,
         "network": network,
@@ -220,17 +210,11 @@ def purchase_data(
     start_time = time.time()
     
     try:
-        response = requests.post(
-            f"{BASE_URL}/purchase",
-            json=payload,
-            headers=get_headers(),
-            timeout=30
-        )
+        response = requests.post(f"{BASE_URL}/purchase",json=payload,headers=get_headers(),timeout=30)
         
         response_time = time.time() - start_time
         response_data = response.json()
         
-        # Log transaction if order provided
         if order:
             TransactionLog.objects.create(
                 order=order,
@@ -243,7 +227,6 @@ def purchase_data(
                 response_time=response_time
             )
         
-        # Check for success
         if response.status_code == 200 and response_data.get("status") == "success":
             return True, response_data
         else:

@@ -203,27 +203,6 @@ class TransactionLog(models.Model):
         return f"Log {str(self.order.id)[:8]} - {self.endpoint}"
 
 
-class APIConfiguration(models.Model):
-    name = models.CharField(max_length=100, default="DataMart Production")
-    api_key = models.CharField(max_length=255)
-    base_url = models.URLField(default="https://datamartbackened.onrender.com/api/developer")
-    is_active = models.BooleanField(default=True)
-    timeout_seconds = models.PositiveIntegerField(default=30)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['-is_active', '-created_at']
-        verbose_name = "API Configuration"
-        verbose_name_plural = "API Configurations"
-
-    def __str__(self):
-        return f"{self.name} ({'Active' if self.is_active else 'Inactive'})"
-
-    def save(self, *args, **kwargs):
-        if self.is_active:
-            APIConfiguration.objects.filter(is_active=True).exclude(pk=self.pk).update(is_active=False)
-        super().save(*args, **kwargs)
 
 
 class DatamartTransaction(models.Model):
