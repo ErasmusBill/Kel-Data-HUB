@@ -1,3 +1,4 @@
+from ipaddress import ip_address
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import validate_email 
@@ -90,5 +91,15 @@ class ResetPasswordToken(BaseModel):
         
     def __str__(self):
         return f"Reset token for {self.user.username}"
-    
+
+class LoginHistory(BaseModel):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="login-history")
+    ip_address = models.GenericIPAddressField()
+    user_agent = models.TextField(blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    isp = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.created_at}"
     

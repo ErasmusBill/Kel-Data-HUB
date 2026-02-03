@@ -1,0 +1,36 @@
+{% load static %}
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+  <body>
+   <header class="bg-black text-white p-4">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center">
+            <div class="bg-white rounded-full p-2">
+                <img src="{% static 'kelhub/logo.png' %}" alt="KELHUB Logo" class="h-8 w-auto"/>
+            </div>
+            <span class="ml-3 text-xl font-bold">KELHUB</span>
+        </div>
+        
+        <div class="flex items-center space-x-3">
+            <button onclick="openLoginModal()" 
+                class="bg-yellow-500 hover:bg-yellow-600 text-black font-medium py-2 px-4 rounded-full transition duration-300 text-sm">Logout
+            </button>
+        </div>
+    </div>
+</header>
+<section class="bg-yellow-600 flex fle-col text-white min-h-full">
+    <div>
+        <ul>
+            <li><a herf="#">My Wallet</li>
+        </ul>
+    </div>
+</section>
+   {% block content %}
+   {% endblock %}
+  </body>
+</html>

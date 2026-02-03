@@ -75,7 +75,6 @@ def create_user(request):
 def login_user(request):
     """Handle user login"""
     
-    # Checks if user if user is already authenticated or redirection
     if request.user.is_authenticated:
         if request.user.role == 'admin':
             return redirect('users:admin-dashboard')
