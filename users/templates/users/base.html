@@ -1,36 +1,95 @@
 {% load static %}
 <!doctype html>
-<html>
-  <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  </head>
-  <body>
-   <header class="bg-black text-white p-4">
-    <div class="flex items-center justify-between">
-        <div class="flex items-center">
+    <title>KELHUB Dashboard</title>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- HEADER -->
+    <header class="bg-black text-white px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
             <div class="bg-white rounded-full p-2">
-                <img src="{% static 'kelhub/logo.png' %}" alt="KELHUB Logo" class="h-8 w-auto"/>
+                <img src="{% static 'kelhub/logo.png' %}" alt="KELHUB Logo" class="h-8 w-auto">
             </div>
-            <span class="ml-3 text-xl font-bold">KELHUB</span>
+            <span class="text-xl font-bold tracking-wide">KELHUB</span>
         </div>
-        
-        <div class="flex items-center space-x-3">
-            <button onclick="openLoginModal()" 
-                class="bg-yellow-500 hover:bg-yellow-600 text-black font-medium py-2 px-4 rounded-full transition duration-300 text-sm">Logout
-            </button>
-        </div>
+
+        <button
+            onclick="openLoginModal()"
+            class="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-5 py-2 rounded-full transition border-2 border-red-500">
+            <a href="{% url 'users:logout' %}">Logout</a>
+        </button>
+    </header>
+
+    <!-- MAIN LAYOUT -->
+    <div class="flex min-h-[calc(100vh-72px)]">
+
+        <!-- SIDEBAR -->
+        <aside class="w-64 bg-yellow-400 text-black flex flex-col shadow-xl">
+
+            <!-- Sidebar Header -->
+            <div class="px-6 py-6 border-b border-black/20">
+                <h2 class="text-xl font-bold">Dashboard</h2>
+                <p class="text-sm text-black/70 mt-1">Welcome back</p>
+            </div>
+
+            <!-- Menu -->
+            <nav class="flex-1 px-4 py-6">
+                <ul class="space-y-3 text-lg font-medium">
+                    <li>
+                        <a href="#"
+                           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            💼 My Wallet
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#"
+                           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            📦 Transactions
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#"
+                           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            📊 Reports
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#"
+                           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            ⚙️ Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="px-6 py-4 border-t border-black/20 text-sm text-black/70">
+                © 2026 KELHUB
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 p-8">
+            {% block content %}
+            <div class="bg-white rounded-xl shadow p-6">
+                <h1 class="text-2xl font-bold mb-4">Dashboard Content</h1>
+                <p class="text-gray-600">
+                    Your main content goes here.
+                </p>
+            </div>
+            {% endblock %}
+        </main>
+
     </div>
-</header>
-<section class="bg-yellow-600 flex fle-col text-white min-h-full">
-    <div>
-        <ul>
-            <li><a herf="#">My Wallet</li>
-        </ul>
-    </div>
-</section>
-   {% block content %}
-   {% endblock %}
-  </body>
+
+</body>
 </html>

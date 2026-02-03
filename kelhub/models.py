@@ -177,11 +177,6 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {str(self.id)[:8]} - {self.phone_number} - {self.get_status_display()}"
 
-
-# -------------------------
-# API LOGGING & CONFIG
-# -------------------------
-
 class TransactionLog(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="api_logs")
     endpoint = models.CharField(max_length=200)

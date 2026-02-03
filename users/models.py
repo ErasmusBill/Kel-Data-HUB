@@ -93,7 +93,7 @@ class ResetPasswordToken(BaseModel):
         return f"Reset token for {self.user.username}"
 
 class LoginHistory(BaseModel):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="login-history")
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="login_history")
     ip_address = models.GenericIPAddressField()
     user_agent = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
