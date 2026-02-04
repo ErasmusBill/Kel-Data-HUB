@@ -7,6 +7,8 @@ from django.db import models
 from django.db.models import F
 from django.utils import timezone
 
+from users.models import CustomUser
+
 
 
 
@@ -178,6 +180,7 @@ class Order(models.Model):
         return f"Order {str(self.id)[:8]} - {self.phone_number} - {self.get_status_display()}"
 
 class TransactionLog(models.Model):
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE, related_name="transaction_log")
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="api_logs")
     endpoint = models.CharField(max_length=200)
     request_method = models.CharField(max_length=10, default='POST')

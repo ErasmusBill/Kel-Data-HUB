@@ -11,78 +11,174 @@
 <body class="bg-gray-100 min-h-screen">
 
     <!-- HEADER -->
-    <header class="bg-black text-white px-6 py-4 flex items-center justify-between">
+    <header class="bg-black text-white px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div class="flex items-center gap-3">
+            <!-- Mobile Menu Toggle Button -->
+            <button
+                onclick="toggleSidebar()"
+                class="lg:hidden bg-yellow-500 hover:bg-yellow-600 text-black font-bold p-2 rounded transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+
             <div class="bg-white rounded-full p-2">
-                <img src="{% static 'kelhub/logo.png' %}" alt="KELHUB Logo" class="h-8 w-auto">
+                <img src="{% static 'kelhub/logo.png' %}" alt="KELHUB Logo" class="h-6 sm:h-8 w-auto">
             </div>
-            <span class="text-xl font-bold tracking-wide">KELHUB</span>
+            <span class="text-lg sm:text-xl font-bold tracking-wide">KELHUB</span>
         </div>
 
         <button
-            onclick="openLoginModal()"
-            class="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-5 py-2 rounded-full transition border-2 border-red-500">
+            class="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-3 sm:px-5 py-2 rounded-full transition border-2 border-white text-sm sm:text-base">
             <a href="{% url 'users:logout' %}">Logout</a>
         </button>
     </header>
 
     <!-- MAIN LAYOUT -->
-    <div class="flex min-h-[calc(100vh-72px)]">
+    <div class="flex min-h-[calc(100vh-72px)] relative">
+
+        <!-- SIDEBAR OVERLAY (Mobile) -->
+        <div
+            id="sidebarOverlay"
+            onclick="toggleSidebar()"
+            class="fixed inset-0 bg-black/50 z-30 lg:hidden hidden">
+        </div>
 
         <!-- SIDEBAR -->
-        <aside class="w-64 bg-yellow-400 text-black flex flex-col shadow-xl">
+        <aside
+            id="sidebar"
+            class="fixed lg:static inset-y-0 left-0 z-40 w-64 sm:w-72 lg:w-64 xl:w-72 bg-yellow-400 text-black flex flex-col shadow-xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+
+            <!-- Close Button (Mobile Only) -->
+            <button
+                onclick="toggleSidebar()"
+                class="lg:hidden absolute top-4 right-4 bg-black text-yellow-400 rounded-full p-2 hover:bg-gray-800 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
 
             <!-- Sidebar Header -->
-            <div class="px-6 py-6 border-b border-black/20">
-                <h2 class="text-xl font-bold">Dashboard</h2>
-                <p class="text-sm text-black/70 mt-1">Welcome back</p>
+            <div class="px-4 sm:px-6 py-6 border-b border-black/20">
+                <h2 class="text-lg sm:text-xl font-bold">Dashboard</h2>
+                <p class="text-xs sm:text-sm text-black/70 mt-1">Welcome back</p>
             </div>
 
             <!-- Menu -->
-            <nav class="flex-1 px-4 py-6">
-                <ul class="space-y-3 text-lg font-medium">
+            <nav class="flex-1 px-3 sm:px-4 py-6 overflow-y-auto">
+                <ul class="space-y-2 sm:space-y-3 text-base sm:text-lg font-medium">
                     <li>
-                        <a href="#"
-                           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
-                            💼 My Wallet
+                        <a href="{% url 'kelhub:dashboard' %}"
+                           class="flex items-center gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            <span class="text-xl">🏠</span>
+                            <span>Dashboard</span>
                         </a>
                     </li>
 
                     <li>
                         <a href="#"
-                           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
-                            📦 Transactions
+                           class="flex items-center gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            <span class="text-xl">💼</span>
+                            <span>My Wallet</span>
                         </a>
                     </li>
 
                     <li>
-                        <a href="#"
-                           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
-                            📊 Reports
+                        <a href="{% url 'kelhub:transaction_log' %}"
+                           class="flex items-center gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            <span class="text-xl">💳</span>
+                            <span>Transactions</span>
                         </a>
                     </li>
 
                     <li>
-                        <a href="#"
-                           class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
-                            ⚙️ Settings
+                        <a href="{% url 'kelhub:orders-related-user' %}"
+                           class="flex items-center gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            <span class="text-xl">📦</span>
+                            <span>Orders</span>
                         </a>
+                    </li>
+
+                    <!-- Network Data Plans Section -->
+                    <li class="pt-4 mt-2">
+                        <p class="px-3 sm:px-4 pb-2 text-xs uppercase font-bold text-black/60 tracking-wide">Data Bundles</p>
+                    </li>
+
+                    <li>
+                        <a href="{% url 'users:display-data-plans' network='MTN' %}"
+                           class="flex items-center gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            <span class="text-xl">📱</span>
+                            <span>MTN</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{% url 'users:display-data-plans' network='TELECEL' %}"
+                           class="flex items-center gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            <span class="text-xl">📱</span>
+                            <span>Telecel</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{% url 'users:display-data-plans' network='AIRTELTIGO' %}"
+                           class="flex items-center gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            <span class="text-xl">📱</span>
+                            <span>AirtelTigo</span>
+                        </a>
+                    </li>
+
+                    <!-- Settings Dropdown -->
+                    <li class="pt-4 mt-2 border-t border-black/20">
+                        <button
+                            onclick="toggleSettingsDropdown()"
+                            class="w-full flex items-center justify-between px-3 sm:px-4 py-3 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">⚙️</span>
+                                <span>Settings</span>
+                            </div>
+                            <svg id="settingsChevron" class="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <ul id="settingsDropdown" class="hidden mt-2 ml-8 space-y-1 text-sm">
+                            <li>
+                                <a href="{% url 'users:update-user-profile' user.id %}"
+                                   class="block px-3 py-2 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                                    👤 Update Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'users:change_password' %}"
+                                   class="block px-3 py-2 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                                    🔑 Change Password
+                                </a>
+                            </li>
+                            {% comment %} <li>
+                                <a href="{% url 'users:reset_password_request' %}"
+                                   class="block px-3 py-2 rounded-lg hover:bg-black hover:text-yellow-400 transition">
+                                    🔄 Reset Password
+                                </a>
+                            </li> {% endcomment %}
+                        </ul>
                     </li>
                 </ul>
             </nav>
 
             <!-- Sidebar Footer -->
-            <div class="px-6 py-4 border-t border-black/20 text-sm text-black/70">
+            <div class="px-4 sm:px-6 py-4 border-t border-black/20 text-xs sm:text-sm text-black/70">
                 © 2026 KELHUB
             </div>
         </aside>
 
         <!-- MAIN CONTENT -->
-        <main class="flex-1 p-8">
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 w-full overflow-x-hidden">
             {% block content %}
-            <div class="bg-white rounded-xl shadow p-6">
-                <h1 class="text-2xl font-bold mb-4">Dashboard Content</h1>
-                <p class="text-gray-600">
+            <div class="bg-white rounded-xl shadow p-4 sm:p-6">
+                <h1 class="text-xl sm:text-2xl font-bold mb-4">Dashboard Content</h1>
+                <p class="text-sm sm:text-base text-gray-600">
                     Your main content goes here.
                 </p>
             </div>
@@ -90,6 +186,43 @@
         </main>
 
     </div>
+
+    <!-- JavaScript for Sidebar Toggle -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        // Settings Dropdown Toggle
+        function toggleSettingsDropdown() {
+            const dropdown = document.getElementById('settingsDropdown');
+            const chevron = document.getElementById('settingsChevron');
+            
+            dropdown.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+        }
+
+        // Close sidebar when clicking on a link (mobile)
+        document.querySelectorAll('#sidebar a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 1024) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        // Close sidebar on window resize to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                document.getElementById('sidebar').classList.remove('-translate-x-full');
+                document.getElementById('sidebarOverlay').classList.add('hidden');
+            }
+        });
+    </script>
 
 </body>
 </html>

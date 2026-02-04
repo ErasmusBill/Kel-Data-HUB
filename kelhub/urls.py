@@ -19,7 +19,7 @@ urlpatterns = [
     path('api/wallet/balance/', views.check_wallet_balance, name='check_balance'),
     
    
-    path('wallet/', views.wallet_view, name='wallet'),
+    path('user-dashboard/', views.user_dashboard, name='dashboard'),
     path('wallet/deposit/', views.deposit_view, name='deposit'),
     path('wallet/deposit/callback/', views.deposit_callback, name='deposit_callback'),
     
@@ -28,5 +28,8 @@ urlpatterns = [
     
    
     path('admin/sync-bundles/', views.sync_bundles_view, name='sync_bundles'),
+    
+    path("orders/",views.orders_related_user,name="orders-related-user"),
+    path("transaction_log/",views.transaction_log, name="transaction_log")
     
 ]

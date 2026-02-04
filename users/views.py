@@ -6,10 +6,19 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
+from kelhub.models import Network,DataBundle
+from kelhub.models import Wallet
 from .models import CustomUser, Profile, ResetPasswordToken
 from .utils import send_email
 from users.utils import send_email
 from django.urls import reverse
+from django.db.models import Q
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 
 @require_http_methods(["GET", "POST"])
 def create_user(request):
@@ -79,7 +88,7 @@ def login_user(request):
         if request.user.role == 'admin':
             return redirect('users:admin-dashboard')
         elif request.user.role == 'customer':
-            return redirect('users:dashboard')
+            return redirect('kelhub:dashboard')
         
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
@@ -100,7 +109,7 @@ def login_user(request):
         if user.role == 'admin': # type: ignore
                 return redirect("user:admin-dashboard")  
         elif user.role == 'customer': # type: ignore
-                return redirect("users:dashboard")
+                return redirect("kelhub:dashboard")
             
         else:
             messages.error(request, "Invalid username or password")
@@ -118,6 +127,10 @@ def change_password(request):
         new_password = request.POST.get('new_password', '')
         confirm_password = request.POST.get('confirm_password', '')
         
+        user = request.user
+        if user.id != request.user.id:
+            messages.error(request,"You are not authorized to perform this action")
+            return redirect("user:login")
       
         if not all([current_password, new_password, confirm_password]):
             messages.error(request, "All fields are required")
@@ -154,7 +167,7 @@ def change_password(request):
         if user.role == 'admin':
             return redirect('user:admin-dashboard')
         elif user.role == 'customer':
-            return redirect('users:dashboard') 
+            return redirect('kelhub:dashboard') 
     return render(request, 'users/change_password.html')
 
 
@@ -245,6 +258,7 @@ def reset_password_request(request):
             ResetPasswordToken.objects.filter(user=user, is_used=False).update(is_used=True)
             
             reset_token = ResetPasswordToken.objects.create(user=user)
+            logger.info(f"Reset token createed {reset_token}")
             
             reset_token.token = reset_token.generate_token()
             reset_token.save()
@@ -268,6 +282,8 @@ def reset_password_request(request):
                 template_name='users/password_reset_email.html',
                 context=context
             )
+            logger.info(f"Sending password reset email to {user.email}")
+
             
             messages.success(request, "Password reset instructions have been sent to your email")
             return redirect("users:login")
@@ -276,7 +292,7 @@ def reset_password_request(request):
             messages.success(request, "If an account exists with that email, password reset instructions have been sent")
             return redirect("users:login")
         except Exception as e:
-            print(f"Error sending password reset email: {e}")  
+            logger.exception("Error sending password reset email")  
             messages.error(request, "An error occurred. Please try again later")
             return redirect("users:reset_password_request")
     
@@ -340,7 +356,34 @@ def reset_password(request, token):
 def admin_dashboard(request):
     return render(request,"users/admin_dashboard.html")
 
-@login_required
-def user_dashboard(request):
-    return render(request,"users/user_dashboard.html")
+
+
+def display_data_plans_view(request, network):
+    """
+    Display available data plans for a network.
+    """
+    
+    network_obj = get_object_or_404(Network,Q(key__iexact=network) | Q(name__icontains=network),is_active=True)
+    data_bundles = DataBundle.objects.filter(network=network_obj,is_active=True).order_by('price')
+    wallet = None
+    if request.user.is_authenticated:
+        wallet, created = Wallet.objects.get_or_create(user=request.user)
+    
+    context = {
+        'network': network_obj,
+        'data_bundles': data_bundles,
+        'wallet': wallet,
+    }
+    
+    return render(request, 'users/display_data_plans.html', context)
+
+
+# @login_required
+# def user_dashboard(request):
+#     user = request.user
+#     if user.id != request.user.id:
+#         messages.error(request,"You are not authorized to perform this action")
+        
+#     wallet = Wallet.objects.filter(user=request.user).select_related("user")
+#     return render(request,"users/user_dashboard.html")
 

@@ -1,66 +1,110 @@
-{% extends "users/base.html" %}
+{% extends "users/base.html"%}
 {% load static %}
-
 {% block content %}
-<section class="text-black w-full">
 
- 
-    <div class="flex flex-col md:flex-row gap-6">
-        <div class="flex-1 bg-yellow-400 border-4 border-black rounded-lg p-12 shadow">
-            <p class="text-4xl pb-2 font-bold">
-                Welcome, {{ user.username }}!
-            </p>
-            <p class="text-sm">
-                Purchase your data at a go
-            </p>
-        </div>
-        <div class="flex-1 bg-white border-2 border-black rounded-lg p-8 shadow">
-            <p class="text-2xl font-semibold mb-2">Wallet Balance</p>
-            <p class="text-sm text-gray-700">
-               Available for cash transactions
-            </p>
-        </div>
+        
+            
+            <!-- Default dashboard content -->
+            <section class="text-black w-full">
+
+                <!-- Welcome and Wallet Section -->
+                <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 mb-6 sm:mb-8">
+                    <!-- Welcome Card -->
+                    <div class="flex-1 bg-yellow-400 border-4 border-black rounded-lg p-6 sm:p-8 lg:p-12 shadow-lg">
+                        <p class="text-2xl sm:text-3xl lg:text-4xl pb-2 font-bold">
+                            Welcome, {{ user.username }}!
+                        </p>
+                        <p class="text-xs sm:text-sm">
+                            Purchase your data at a go
+                        </p>
+                    </div>
+                    
+                    <!-- Wallet Balance Card -->
+                    <div class="flex-1 bg-white border-2 border-black rounded-lg p-6 sm:p-8 shadow-lg">
+                        <p class="text-xl sm:text-2xl font-semibold mb-2">Wallet Balance</p>
+                        <p class="text-xs sm:text-sm text-gray-700">
+                           Available for cash transactions
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Stats Grid Section -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Stat Card 1 -->
+                    <div class="bg-yellow-400 border-4 border-black rounded-lg p-6 sm:p-8 lg:p-10 shadow-lg">
+                        <p class="text-4xl sm:text-3xl lg:text-4xl font-bold mb-2">
+                           Pending Orders
+                        </p>
+                        <p class="text-2xl sm:text-sm">
+                          {{ pending_orders }}
+                        </p>
+                    </div>
+
+                    <!-- Stat Card 2 -->
+                    <div class="bg-yellow-400 border-4 border-black rounded-lg p-6 sm:p-8 lg:p-10 shadow-lg">
+                        <p class="text-lg sm:text-3xl lg:text-4xl font-bold mb-2">
+                          Successful Orders
+                        </p>
+                        <p class="text-2xl sm:text-sm">
+                          {{ successful_orders }}
+                        </p>
+                    </div>
+
+                    <!-- Stat Card 3 -->
+                    <div class="bg-yellow-400 border-4 border-black rounded-lg p-6 sm:p-8 lg:p-10 shadow-lg">
+                        <p class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
+                           Wallet
+                        </p>
+                        <p class="text-xs sm:text-sm">
+                           {{ wallet }}
+                        </p>
+                    </div>
+
+                    {% comment %} <!-- Stat Card 4 -->
+                    <div class="bg-yellow-400 border-4 border-black rounded-lg p-6 sm:p-8 lg:p-10 shadow-lg">
+                        <p class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
+                           Referrals
+                        </p>
+                        <p class="text-xs sm:text-sm">
+                           Users
+                        </p>
+                    </div> {% endcomment %}
+                </div>
+
+            </section>
+            {% endblock %}
+        </main>
+
     </div>
 
-    <div class="flex flex-col md:flex-row gap-2 pt-8">
-        <div class="flex bg-yellow-400 border-4 border-black rounded-lg p-12 shadow-lg">
-            <p class="text-4xl pb-2 font-bold py-30 px-24">
-               Total Orders
-            </p>
-            <p class="text-sm">
-               GH
-            </p>
-        </div>
 
-        <div class="flex bg-yellow-400 border-4 border-black rounded-lg p-12 shadow-lg">
-            <p class="text-4xl pb-2 font-bold py-30 px-24">
-               Total Orders
-            </p>
-            <p class="text-sm">
-               GH
-            </p>
-        </div>
+    <!-- JavaScript for Sidebar Toggle -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
 
-        <div class="flex bg-yellow-400 border-4 border-black rounded-lg p-12 shadow-lg">
-            <p class="text-4xl pb-2 font-bold py-30 px-24">
-               Total Orders
-            </p>
-            <p class="text-sm">
-               GH
-            </p>
-        </div>
+        // Close sidebar when clicking on a link (mobile)
+        document.querySelectorAll('#sidebar a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 1024) {
+                    toggleSidebar();
+                }
+            });
+        });
 
-        <div class="flex bg-yellow-400 border-4 border-black rounded-lg p-12 shadow-lg">
-            <p class="text-4xl pb-2 font-bold py-30 px-24">
-               Total Orders
-            </p>
-            <p class="text-sm">
-               GH
-            </p>
-        </div>
-    </div>
+        // Close sidebar on window resize to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                document.getElementById('sidebar').classList.remove('-translate-x-full');
+                document.getElementById('sidebarOverlay').classList.add('hidden');
+            }
+        });
+    </script>
 
-    
-
-</section>
-{% endblock %}
+</body>
+</html>

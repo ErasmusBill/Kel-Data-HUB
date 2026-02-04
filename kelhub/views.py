@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.db.models import Q
 from decimal import Decimal, InvalidOperation
 from .models import Network, DataBundle, Order, TransactionLog, Wallet, WalletTransaction
+from django.core.paginator import Paginator
 from .utils import (
     get_data_plans, purchase_data, sync_data_bundles, validate_phone_number,
     initialize_paystack_payment, verify_paystack_payment, generate_guest_email
@@ -346,10 +347,38 @@ def order_detail(request, order_id):
     
     return render(request, 'kelhub/order_detail.html', context)
 
+@login_required
+def orders_related_user(request):
+    user = request.user
+    if user.id != request.user.id:
+        messages.error(request,"You ain't authorized to perform this action")
+        return redirect("user:login")
 
+    orders = Order.objects.filter(user=request.user).all()
+    paginator = Paginator(orders,30)
+    
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request,"users/order_history.html",{"page_obj":page_obj})
+
+@login_required()
+def transaction_log(request):
+    user = request.user
+    if user.id != request.user.id:
+        messages.error(request,"You ain't authorized to perform this action")
+        return redirect("user:login")
+    
+    transactions_logs = TransactionLog.objects.filter(user= request.user).all()
+    paginator = Paginator(transactions_logs,30)
+    
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    return render(request,"users/transaction_log.html",{"page_obj":page_obj})
+        
 
 @login_required
-def wallet_view(request):
+def user_dashboard(request):
     """Display user's wallet and transaction history"""
     wallet, created = Wallet.objects.get_or_create(user=request.user)
     
@@ -365,7 +394,7 @@ def wallet_view(request):
         'pending_orders': pending_orders,
         'successful_orders': successful_orders,
     }
-    return render(request, 'kelhub/wallet.html', context)
+    return render(request, 'users/user_dashboard.html', context)
 
 
 @login_required
@@ -506,7 +535,7 @@ def order_history_view(request):
         'stats': stats,
         'status_filter': status_filter,
     }
-    return render(request, 'kelhub/order_history.html', context)
+    return render(request, 'kelhub/order_hist.html', context)
 
 
 @login_required

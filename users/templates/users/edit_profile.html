@@ -1,0 +1,216 @@
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="text-black w-full max-w-3xl mx-auto">
+    
+    <!-- Page Header -->
+    <div class="bg-yellow-400 border-4 border-black rounded-lg p-6 sm:p-8 shadow-lg mb-6">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">Update Profile</h1>
+        <p class="text-xs sm:text-sm text-black/70">
+            Manage your account information
+        </p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="mb-6 p-4 rounded-lg border-2 border-black {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+            <p class="font-medium">{{ message }}</p>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Profile Update Form -->
+    <div class="bg-white border-2 border-black rounded-lg shadow-lg overflow-hidden">
+        
+        <!-- Avatar Section -->
+        <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 p-6 sm:p-8 text-center border-b-2 border-black">
+            <div class="flex flex-col items-center">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" alt="Profile Avatar" class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-black shadow-lg object-cover mb-4">
+                {% else %}
+                    <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-black bg-white flex items-center justify-center text-4xl sm:text-5xl font-bold mb-4 shadow-lg">
+                        {{ user.full_name|first|upper|default:"?" }}
+                    </div>
+                {% endif %}
+                <p class="text-lg font-bold text-black">{{ user.username }}</p>
+                <p class="text-sm text-black/70">Member since {{ user.date_joined|date:"M Y" }}</p>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" action="{% url 'users:update-user-profile' user.id %}" enctype="multipart/form-data" class="p-6 sm:p-8 space-y-6">
+            {% csrf_token %}
+
+            <!-- Full Name -->
+            <div>
+                <label for="full_name" class="block text-sm font-bold mb-2">
+                    Full Name <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="text"
+                    id="full_name"
+                    name="full_name"
+                    value="{{ user.full_name }}"
+                    required
+                    class="w-full px-4 py-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+                    placeholder="Enter your full name"
+                />
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label for="email" class="block text-sm font-bold mb-2">
+                    Email Address <span class="text-red-500">*</span>
+                </label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value="{{ user.email }}"
+                    required
+                    class="w-full px-4 py-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+                    placeholder="Enter your email address"
+                />
+            </div>
+
+            <!-- Phone Number -->
+            <div>
+                <label for="phone_number" class="block text-sm font-bold mb-2">
+                    Phone Number
+                </label>
+                <input
+                    type="tel"
+                    id="phone_number"
+                    name="phone_number"
+                    value="{{ profile.phone_number|default:'' }}"
+                    class="w-full px-4 py-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+                    placeholder="e.g., 0241234567"
+                />
+            </div>
+
+            <!-- Address -->
+            <div>
+                <label for="address" class="block text-sm font-bold mb-2">
+                    Address
+                </label>
+                <textarea
+                    id="address"
+                    name="address"
+                    rows="3"
+                    class="w-full px-4 py-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 transition resize-none"
+                    placeholder="Enter your address">{{ profile.address|default:'' }}</textarea>
+            </div>
+
+            <!-- Avatar Upload -->
+            <div>
+                <label for="avatar" class="block text-sm font-bold mb-2">
+                    Profile Picture
+                </label>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <input
+                        type="file"
+                        id="avatar"
+                        name="avatar"
+                        accept="image/*"
+                        class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-2 file:border-black file:text-sm file:font-bold file:bg-yellow-400 file:text-black hover:file:bg-yellow-500 file:cursor-pointer"
+                    />
+                </div>
+                <p class="mt-2 text-xs text-gray-600">
+                    Accepted formats: JPG, PNG, GIF (Max 5MB)
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                <button
+                    type="submit"
+                    class="flex-1 bg-yellow-400 hover:bg-yellow-500 border-2 border-black rounded-lg px-6 py-3 font-bold transition transform hover:scale-105 shadow-lg">
+                    💾 Save Changes
+                </button>
+                
+                    <a href="{% url 'kelhub:dashboard' %}"
+                    class="flex-1 text-center bg-gray-200 hover:bg-gray-300 border-2 border-black rounded-lg px-6 py-3 font-bold transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Additional Account Info -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <!-- Account Status -->
+        <div class="bg-white border-2 border-black rounded-lg p-6 shadow-lg">
+            <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                <span class="text-xl">📊</span>
+                Account Status
+            </h3>
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Username:</span>
+                    <span class="font-medium">{{ user.username }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Status:</span>
+                    <span class="font-medium text-green-600">Active</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Joined:</span>
+                    <span class="font-medium">{{ user.date_joined|date:"M d, Y" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security -->
+        <div class="bg-white border-2 border-black rounded-lg p-6 shadow-lg">
+            <h3 class="font-bold text-lg mb-3 flex items-center gap-2">
+                <span class="text-xl">🔐</span>
+                Security
+            </h3>
+            <div class="space-y-3">
+                <a href="{% url 'users:change_password' %}" 
+                   class="block w-full bg-gray-100 hover:bg-gray-200 border-2 border-black rounded-lg px-4 py-2 text-sm font-medium text-center transition">
+                    Change Password
+                </a>
+                <a href="{% url 'users:reset_password_request' %}" 
+                   class="block w-full bg-gray-100 hover:bg-gray-200 border-2 border-black rounded-lg px-4 py-2 text-sm font-medium text-center transition">
+                    Reset Password
+                </a>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+    // Preview avatar before upload
+    document.getElementById('avatar').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file && file.size > 5 * 1024 * 1024) {
+            alert('File size must be less than 5MB');
+            e.target.value = '';
+            return;
+        }
+    });
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const fullName = document.getElementById('full_name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        
+        if (!fullName) {
+            e.preventDefault();
+            alert('Full name is required');
+            return false;
+        }
+        
+        if (!email) {
+            e.preventDefault();
+            alert('Email is required');
+            return false;
+        }
+    });
+</script>
+
+{% endblock %}
