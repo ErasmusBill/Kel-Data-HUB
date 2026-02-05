@@ -4,7 +4,7 @@
 {% block content %}
     <section class="bg-gray-900 min-h-screen flex items-center justify-center py-12 px-4">
         <div class="w-full max-w-md">
-            <form method="POST" action="" class="bg-white rounded-lg shadow-xl p-8 space-y-6">
+            <form method="POST" action="" id="purchaseForm" class="bg-white rounded-lg shadow-xl p-8 space-y-6">
                 {% csrf_token %}
                 
                 <div>
@@ -48,7 +48,6 @@
                     <h3 class="font-semibold text-gray-800 mb-2">Selected Bundle</h3>
                     <div class="text-sm text-gray-600 space-y-1">
                         <p><span class="font-medium">Network:</span> {{ bundle.network.name }}</p>
-                        {% comment %} <p><span class="font-medium">Data:</span> {{ bundle.display_capacity }}</p> {% endcomment %}
                         <p><span class="font-medium">Price:</span> GH₵{{ bundle.price }}</p>
                     </div>
                 </div>
@@ -90,25 +89,25 @@
                 </div>
                 {% endif %}
 
-                {# Email (for guests) #}
-                {% if is_guest %}
+                {# Email (for guests and paystack) #}
                 <div>
                     <label for="customer_email" class="block text-sm font-medium text-gray-700 mb-2">
-                        Email <span class="text-gray-500 text-xs">(Optional)</span>
+                        Email {% if is_guest %}<span class="text-gray-500 text-xs">(Optional)</span>{% else %}<span class="text-red-500">*</span>{% endif %}
                     </label>
                     <input 
                         type="email" 
                         id="customer_email" 
                         name="customer_email"
                         placeholder="your@email.com"
+                        {% if not is_guest %}value="{{ user.email }}"{% endif %}
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                     >
                 </div>
-                {% endif %}
 
                 {# Submit Button #}
                 <button 
                     type="submit"
+                    id="submitBtn"
                     class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
                 >
                     Purchase Data Bundle
@@ -116,4 +115,87 @@
             </form>
         </div>
     </section>
+
+    {# Paystack Inline Script #}
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script>
+        const form = document.getElementById('purchaseForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+            
+            // If wallet payment or guest (always paystack for guests)
+            {% if not is_guest %}
+            if (paymentMethod && paymentMethod.value === 'wallet') {
+                // Submit form normally for wallet payment
+                form.submit();
+                return;
+            }
+            {% endif %}
+
+            // Paystack payment flow
+            const email = document.getElementById('customer_email').value;
+            const phone = document.getElementById('recipient_phone').value;
+            const bundleId = document.getElementById('bundle_id').value;
+
+            // Validate email for Paystack
+            if (!email) {
+                alert('Please enter your email address for Paystack payment');
+                return;
+            }
+
+            if (!bundleId) {
+                alert('Please select a data bundle');
+                return;
+            }
+
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+
+            // Initialize Paystack payment
+            const handler = PaystackPop.setup({
+                key: '{{ paystack_public_key }}', // Add this to your context
+                email: email,
+                amount: {{ bundle.price|default:0 }} * 100, // Amount in pesewas
+                currency: 'GHS',
+                ref: 'DATA_' + Math.floor((Math.random() * 1000000000) + 1), // Generate unique reference
+                metadata: {
+                    custom_fields: [
+                        {
+                            display_name: "Phone Number",
+                            variable_name: "phone_number",
+                            value: phone
+                        },
+                        {
+                            display_name: "Bundle ID",
+                            variable_name: "bundle_id",
+                            value: bundleId
+                        }
+                    ]
+                },
+                callback: function(response) {
+                    // Payment successful
+                    // Add reference to form and submit
+                    const refInput = document.createElement('input');
+                    refInput.type = 'hidden';
+                    refInput.name = 'paystack_reference';
+                    refInput.value = response.reference;
+                    form.appendChild(refInput);
+                    
+                    form.submit();
+                },
+                onClose: function() {
+                    // Re-enable submit button if user closes the popup
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Purchase Data Bundle';
+                }
+            });
+
+            handler.openIframe();
+        });
+    </script>
 {% endblock %}
