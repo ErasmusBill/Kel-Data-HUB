@@ -404,24 +404,33 @@ def deposit_view(request):
     
     if request.method == 'POST':
         try:
-            amount = Decimal(request.POST.get('amount', 0))
+            amount_str = request.POST.get('amount', '').strip()
             
+            amount_str = amount_str.replace('GH₵', '').replace(',', '').strip()
+            
+            if not amount_str:
+                messages.error(request, 'Please enter an amount')
+                return redirect('kelhub:deposit')
+            
+         
+            amount = Decimal(amount_str)
+            
+         
             if amount <= 0:
                 messages.error(request, 'Please enter a valid amount greater than zero')
                 return redirect('kelhub:deposit')
             
             if amount < Decimal('5.00'):
                 messages.error(request, 'Minimum deposit is GH₵5.00')
-                return redirect('kelhub:deposit')
-            
-            # Initialize Paystack payment for deposit
+                return redirect('kelhub:deposit') 
+          
             callback_url = request.build_absolute_uri(
                 reverse('kelhub:deposit_callback')
             )
             
             metadata = {
                 'user_id': str(request.user.id),
-                'wallet_id': str(wallet.id),
+                'wallet_id': str(wallet.id), # type: ignore
                 'transaction_type': 'deposit'
             }
             
@@ -429,27 +438,32 @@ def deposit_view(request):
                 email=request.user.email or generate_guest_email(str(request.user.id)),
                 amount=amount,
                 callback_url=callback_url,
-                reference=f"DEP-{wallet.id}-{int(amount * 100)}",
+                reference=f"DEP-{wallet.id}-{int(amount * 100)}", # type: ignore
                 metadata=metadata
             ) # type: ignore
             
             if paystack_response.get('status') == 'success':
-                # Store amount and reference in session
                 request.session['deposit_amount'] = str(amount)
                 request.session['deposit_reference'] = paystack_response['data'].get('reference')
                 
-                # Redirect to Paystack
+            
                 return redirect(paystack_response['data'].get('authorization_url'))
             else:
                 messages.error(
                     request,
-                    f"Payment initialization failed: {paystack_response.get('message')}"
+                    f"Payment initialization failed: {paystack_response.get('message', 'Unknown error')}"
                 )
                     
-        except (ValueError, TypeError, InvalidOperation):
-            messages.error(request, 'Invalid amount entered. Please enter a valid number.')
+        except (ValueError, TypeError, InvalidOperation) as e:
+            # More specific error message
+            messages.error(request, 'Invalid amount entered. Please enter a valid number (e.g., 10.00)')
         except Exception as e:
-            messages.error(request, f'An error occurred: {str(e)}')
+            # Log the full error for debugging
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Deposit error for user {request.user.id}: {str(e)}")
+            
+            messages.error(request, 'An error occurred while processing your request. Please try again.')
     
     context = {
         'wallet': wallet,

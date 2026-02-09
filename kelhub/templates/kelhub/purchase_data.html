@@ -158,7 +158,7 @@
 
             // Initialize Paystack payment
             const handler = PaystackPop.setup({
-                key: '{{ paystack_public_key }}', // Add this to your context
+                key: 'pk_test_7a4cf6b1079aacdf776d6fe2290490acfe7ba671',
                 email: email,
                 amount: {{ bundle.price|default:0 }} * 100, // Amount in pesewas
                 currency: 'GHS',

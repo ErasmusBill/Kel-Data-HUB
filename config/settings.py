@@ -175,6 +175,6 @@ LOGGING = {
 
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',  # 👈 THIS is key
+        'level': 'INFO', 
     },
 }
