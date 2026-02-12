@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from kelhub.views import order_history_view
 
 app_name = 'kelhub'
 
@@ -30,6 +31,8 @@ urlpatterns = [
     path('admin/sync-bundles/', views.sync_bundles_view, name='sync_bundles'),
     
     path("orders/",views.orders_related_user,name="orders-related-user"),
-    path("transaction_log/",views.transaction_log, name="transaction_log")
+    path("transaction_log/",views.transaction_log, name="transaction_log"),
+     
+    path('order-history/',views.order_history_view,name='order-history')
     
 ]

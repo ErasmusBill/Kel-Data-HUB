@@ -126,6 +126,7 @@ class OrderAdmin(admin.ModelAdmin):
         'payment_method',
         'status_display',
         'created_at',
+        'status'
     )
     list_filter = ('status', 'payment_method', 'network', 'created_at')
     search_fields = ('id', 'user__username', 'phone_number', 'purchase_id', 'transaction_reference')

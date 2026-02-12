@@ -1,0 +1,420 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>KELHUB Admin Dashboard</title>
+    <style>
+        * {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Custom scrollbar */
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+    <!-- HEADER -->
+    <header class="bg-gradient-to-r from-gray-900 to-black text-white px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-lg border-b-2 border-yellow-500">
+        <div class="flex items-center gap-3">
+            <!-- Mobile Menu Toggle Button -->
+            <button
+                onclick="toggleSidebar()"
+                class="lg:hidden bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold p-2.5 rounded-lg transition shadow-md hover:shadow-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+
+            <div class="bg-white rounded-full p-2 shadow-md">
+                <img src="{% static 'kelhub/logo.png' %}" alt="KELHUB Logo" class="h-6 sm:h-8 w-auto">
+            </div>
+            <div>
+                <span class="text-lg sm:text-xl font-bold tracking-wide">KELHUB</span>
+                <span class="ml-2 text-xs sm:text-sm bg-yellow-500 text-black px-2 py-1 rounded-full font-semibold">ADMIN</span>
+            </div>
+        </div>
+
+        <button
+            class="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-semibold px-4 sm:px-6 py-2.5 rounded-lg transition shadow-md hover:shadow-lg border border-yellow-300 text-sm sm:text-base">
+            <a href="{% url 'users:logout' %}" class="flex items-center gap-2">
+                <span>Logout</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+            </a>
+        </button>
+    </header>
+
+    <!-- MAIN LAYOUT -->
+    <div class="flex min-h-[calc(100vh-80px)] relative">
+
+        <!-- SIDEBAR OVERLAY (Mobile) -->
+        <div
+            id="sidebarOverlay"
+            onclick="toggleSidebar()"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden hidden transition-opacity">
+        </div>
+
+        <!-- SIDEBAR -->
+        <aside
+            id="sidebar"
+            class="fixed lg:static inset-y-0 left-0 z-40 w-72 sm:w-80 lg:w-72 xl:w-80 bg-gradient-to-b from-yellow-300 via-yellow-400 to-yellow-500 text-black flex flex-col shadow-2xl transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out border-r-4 border-yellow-600">
+
+            <!-- Close Button (Mobile Only) -->
+            <button
+                onclick="toggleSidebar()"
+                class="lg:hidden absolute top-4 right-4 bg-black text-yellow-400 rounded-full p-2 hover:bg-gray-800 transition shadow-lg z-50">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <!-- Sidebar Header -->
+            <div class="px-5 sm:px-6 py-6 border-b-2 border-black/30 bg-black/5">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="bg-black text-yellow-400 rounded-full p-2">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-bold">Admin Panel</h2>
+                    </div>
+                </div>
+                <p class="text-sm text-black/70 mt-1.5 font-medium flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Welcome, {{ user.username }}
+                </p>
+            </div>
+
+            <!-- Menu -->
+            <nav class="flex-1 px-4 sm:px-5 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-black/20 scrollbar-track-transparent">
+                <ul class="space-y-2 text-base sm:text-lg font-medium">
+                    
+                    <!-- Main Navigation -->
+                    <li>
+                        <p class="px-4 pb-2 text-xs uppercase font-bold text-black/70 tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                            </svg>
+                            Dashboard
+                        </p>
+                    </li>
+
+                    <li>
+                        <a href="{% url 'users:admin-dashboard' %}"
+                           class="group flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-black hover:text-yellow-400 transition-all duration-200 active:scale-95 hover:shadow-lg"
+                           data-page="dashboard">
+                            <span class="text-2xl group-hover:scale-110 transition-transform">📊</span>
+                            <div class="flex-1">
+                                <span class="font-semibold">Dashboard</span>
+                                <p class="text-xs text-black/60 group-hover:text-yellow-300">Overview & Stats</p>
+                            </div>
+                            <svg class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </li>
+
+                    <!-- Divider -->
+                    <li class="pt-4 pb-2">
+                        <div class="h-px bg-black/20"></div>
+                    </li>
+
+                    <!-- Management Section -->
+                    <li>
+                        <p class="px-4 pb-2 text-xs uppercase font-bold text-black/70 tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            Management
+                        </p>
+                    </li>
+
+                    <li>
+                        <a href="{% url 'users:list-all-orders' %}"
+                           class="group flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-black hover:text-yellow-400 transition-all duration-200 active:scale-95 hover:shadow-lg"
+                           data-page="orders">
+                            <span class="text-2xl group-hover:scale-110 transition-transform">📦</span>
+                            <div class="flex-1">
+                                <span class="font-semibold">Orders</span>
+                                <p class="text-xs text-black/60 group-hover:text-yellow-300">Manage all orders</p>
+                            </div>
+                            <svg class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#"
+                           class="group flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-black hover:text-yellow-400 transition-all duration-200 active:scale-95 hover:shadow-lg"
+                           data-page="transactions">
+                            <span class="text-2xl group-hover:scale-110 transition-transform">💳</span>
+                            <div class="flex-1">
+                                <span class="font-semibold">Transactions</span>
+                                <p class="text-xs text-black/60 group-hover:text-yellow-300">Payment history</p>
+                            </div>
+                            <svg class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#"
+                           class="group flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-black hover:text-yellow-400 transition-all duration-200 active:scale-95 hover:shadow-lg">
+                            <span class="text-2xl group-hover:scale-110 transition-transform">👥</span>
+                            <div class="flex-1">
+                                <span class="font-semibold">Users</span>
+                                <p class="text-xs text-black/60 group-hover:text-yellow-300">User management</p>
+                            </div>
+                            <svg class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#"
+                           class="group flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-black hover:text-yellow-400 transition-all duration-200 active:scale-95 hover:shadow-lg">
+                            <span class="text-2xl group-hover:scale-110 transition-transform">📱</span>
+                            <div class="flex-1">
+                                <span class="font-semibold">Data Bundles</span>
+                                <p class="text-xs text-black/60 group-hover:text-yellow-300">Plans & pricing</p>
+                            </div>
+                            <svg class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </li>
+
+                    <!-- Divider -->
+                    <li class="pt-4 pb-2">
+                        <div class="h-px bg-black/20"></div>
+                    </li>
+
+                    <!-- Reports Section -->
+                    <li>
+                        <p class="px-4 pb-2 text-xs uppercase font-bold text-black/70 tracking-wider flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Reports
+                        </p>
+                    </li>
+
+                    <li>
+                        <a href="#"
+                           class="group flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-black hover:text-yellow-400 transition-all duration-200 active:scale-95 hover:shadow-lg">
+                            <span class="text-2xl group-hover:scale-110 transition-transform">📈</span>
+                            <div class="flex-1">
+                                <span class="font-semibold">Sales Reports</span>
+                                <p class="text-xs text-black/60 group-hover:text-yellow-300">Revenue analytics</p>
+                            </div>
+                            <svg class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#"
+                           class="group flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-black hover:text-yellow-400 transition-all duration-200 active:scale-95 hover:shadow-lg">
+                            <span class="text-2xl group-hover:scale-110 transition-transform">📊</span>
+                            <div class="flex-1">
+                                <span class="font-semibold">Activity Logs</span>
+                                <p class="text-xs text-black/60 group-hover:text-yellow-300">System activity</p>
+                            </div>
+                            <svg class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    </li>
+
+                    <!-- Divider -->
+                    <li class="pt-4 pb-2">
+                        <div class="h-px bg-black/20"></div>
+                    </li>
+
+                    <!-- Settings Dropdown -->
+                    <li class="pt-2">
+                        <button
+                            onclick="toggleSettingsDropdown()"
+                            class="group w-full flex items-center justify-between px-4 py-3.5 rounded-xl hover:bg-black hover:text-yellow-400 transition-all duration-200 active:scale-95 hover:shadow-lg">
+                            <div class="flex items-center gap-4">
+                                <span class="text-2xl group-hover:scale-110 transition-transform">⚙️</span>
+                                <span class="font-semibold">Settings</span>
+                            </div>
+                            <svg id="settingsChevron" class="w-6 h-6 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <ul id="settingsDropdown" class="hidden mt-2 ml-4 space-y-1.5 text-sm animate-fadeIn">
+                            <li>
+                                <a href="{% url 'users:update-user-profile' user.id %}"
+                                   class="group flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-black/90 hover:text-yellow-400 transition-all duration-200 active:scale-95 bg-black/10">
+                                    <span class="text-lg">👤</span>
+                                    <span class="font-medium">Update Profile</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'users:change_password' %}"
+                                   class="group flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-black/90 hover:text-yellow-400 transition-all duration-200 active:scale-95 bg-black/10">
+                                    <span class="text-lg">🔑</span>
+                                    <span class="font-medium">Change Password</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#"
+                                   class="group flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-black/90 hover:text-yellow-400 transition-all duration-200 active:scale-95 bg-black/10">
+                                    <span class="text-lg">🔔</span>
+                                    <span class="font-medium">Notifications</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#"
+                                   class="group flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-black/90 hover:text-yellow-400 transition-all duration-200 active:scale-95 bg-black/10">
+                                    <span class="text-lg">🔐</span>
+                                    <span class="font-medium">Security</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="px-5 sm:px-6 py-4 border-t-2 border-black/30 bg-black/5">
+                <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs sm:text-sm text-black/70 font-semibold">© 2026 KELHUB</p>
+                    <div class="flex items-center gap-1">
+                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <span class="text-xs text-black/70 font-medium">Online</span>
+                    </div>
+                </div>
+                <div class="bg-black/10 rounded-lg p-2 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-black/70">System Status</span>
+                        <span class="font-bold text-green-700">Active</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 w-full overflow-x-hidden">
+            {% block content %}
+            {% comment %} <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-200">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">Admin Dashboard Content</h1>
+                <p class="text-sm sm:text-base text-gray-600">
+                    Your admin content goes here.
+                </p>
+            </div> {% endcomment %}
+            {% endblock %}
+        </main>
+
+    </div>
+
+    <!-- JavaScript for Sidebar Toggle -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+            
+            // Add smooth animation
+            if (!sidebar.classList.contains('-translate-x-full')) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+            }
+        }
+
+        // Settings Dropdown Toggle
+        function toggleSettingsDropdown() {
+            const dropdown = document.getElementById('settingsDropdown');
+            const chevron = document.getElementById('settingsChevron');
+            
+            dropdown.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+            
+            // Smooth height animation
+            if (!dropdown.classList.contains('hidden')) {
+                dropdown.style.maxHeight = '0';
+                dropdown.style.overflow = 'hidden';
+                setTimeout(() => {
+                    dropdown.style.maxHeight = '500px';
+                    dropdown.style.transition = 'max-height 0.3s ease-in-out';
+                }, 10);
+            }
+        }
+
+        // Close sidebar when clicking on a link (mobile)
+        document.querySelectorAll('#sidebar a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 1024) {
+                    toggleSidebar();
+                }
+            });
+        });
+
+        // Close sidebar on window resize to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                document.getElementById('sidebar').classList.remove('-translate-x-full');
+                document.getElementById('sidebarOverlay').classList.add('hidden');
+            }
+        });
+
+        // Add active state to current page
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('#sidebar a[data-page]').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('bg-black', 'text-yellow-400', 'shadow-lg');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

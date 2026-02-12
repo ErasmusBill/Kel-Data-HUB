@@ -633,4 +633,4 @@ def sync_bundles_view(request):
     except Exception as e:
         messages.error(request, f'Sync failed: {str(e)}')
     
-    return redirect('admin:index')
+    return redirect('users:admin-dashboard')

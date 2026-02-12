@@ -336,6 +336,66 @@
         flex-wrap: wrap;
     }
     
+    /* Pagination Styles */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        background: white;
+        border-top: 2px solid #e5e7eb;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .pagination-info {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+    
+    .pagination-links {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .pagination-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        text-decoration: none;
+        color: #374151;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        min-width: 2.5rem;
+    }
+    
+    .pagination-link:hover {
+        background: #fbbf24;
+        color: #1a1a1a;
+        border-color: #fbbf24;
+        transform: translateY(-2px);
+    }
+    
+    .pagination-link.active {
+        background: #fbbf24;
+        color: #1a1a1a;
+        border-color: #fbbf24;
+        font-weight: 700;
+    }
+    
+    .pagination-link.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+        background: #f3f4f6;
+    }
+    
     @media (max-width: 768px) {
         .stats-grid {
             grid-template-columns: 1fr;
@@ -354,49 +414,31 @@
             flex: 1;
             text-align: center;
         }
+        
+        .pagination-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .pagination-links {
+            width: 100%;
+            justify-content: center;
+        }
     }
 </style>
 
+<!-- Admin Header -->
 <div class="admin-header">
-    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Welcome back, Admin! 👋</h1>
-    <p class="text-lg text-gray-800 font-medium">Here's what's happening with your orders today.</p>
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">All Orders Management 📋</h1>
+    <p class="text-lg text-gray-800 font-medium">View and manage all customer orders.</p>
 </div>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon bg-amber-100 text-amber-700">💰</div>
-        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-600 mb-1">Total Revenue</h3>
-        <div class="text-3xl font-extrabold text-gray-900 mb-2">GH₵{{ total_revenue }}</div>
-        <div class="text-sm text-gray-600">Last 30 days</div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon bg-blue-100 text-blue-700">📦</div>
-        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-600 mb-1">Total Orders</h3>
-        <div class="text-3xl font-extrabold text-gray-900 mb-2">{{ total_orders }}</div>
-        <div class="text-sm text-gray-600">Lifetime orders</div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon bg-purple-100 text-purple-700">⏳</div>
-        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-600 mb-1">Pending Orders</h3>
-        <div class="text-3xl font-extrabold text-gray-900 mb-2">{{ pending_orders|length }}</div>
-        <div class="text-sm text-gray-600">Awaiting processing</div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon bg-green-100 text-green-700">✅</div>
-        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-600 mb-1">Successful Orders</h3>
-        <div class="text-3xl font-extrabold text-gray-900 mb-2">{{ successful_orders }}</div>
-        <div class="text-sm text-gray-600">Completed orders</div>
-    </div>
-</div>
-
+<!-- Orders Table Container -->
 <div class="orders-container">
     <div class="orders-header">
         <div>
-            <h2 class="text-2xl font-bold mb-1">Pending Orders</h2>
-            <p class="text-gray-300 text-sm">Review and process customer orders</p>
+            <h2 class="text-2xl font-bold mb-1">Orders</h2>
+            <p class="text-gray-300 text-sm">Complete list of all orders in the system</p>
         </div>
         <div class="filter-tabs">
             <button class="filter-tab active" onclick="filterOrders('all')">
@@ -408,8 +450,14 @@
             <button class="filter-tab" onclick="filterOrders('processing')">
                 Processing
             </button>
-            <button class="filter-tab" onclick="filterOrders('today')">
-                Today
+            <button class="filter-tab" onclick="filterOrders('successful')">
+                Successful
+            </button>
+            <button class="filter-tab" onclick="filterOrders('failed')">
+                Failed
+            </button>
+            <button class="filter-tab" onclick="filterOrders('refunded')">
+                Refunded
             </button>
         </div>
     </div>
@@ -431,15 +479,15 @@
                 </tr>
             </thead>
             <tbody>
-                {% for order in pending_orders %}
+                {% for order in page_obj %}
                 <tr data-status="{{ order.status }}">
                     <td>
-                        <div class="order-id mono">#{{ order.id|slice:":8"|upper }}</div>
+                        <div class="order-id mono">#{{ order.id|stringformat:"s"|slice:":8"|upper }}</div>
                     </td>
                     <td>
                         {% if order.user %}
                             <div class="customer-info">
-                                <div class="customer-name">{{ order.user.username }}</div>
+                                <div class="customer-name">{{ order.user.get_full_name|default:order.user.username }}</div>
                                 <div class="customer-email">{{ order.user.email }}</div>
                             </div>
                         {% else %}
@@ -450,39 +498,77 @@
                         <div class="font-semibold mono text-gray-900">{{ order.phone_number }}</div>
                     </td>
                     <td>
+                        {% if order.network %}
                         <span class="network-badge network-{{ order.network.key|lower }}">
                             {{ order.network.name }}
                         </span>
+                        {% else %}
+                        <span class="text-gray-500">N/A</span>
+                        {% endif %}
                     </td>
                     <td>
+                        {% if order.bundle %}
                         <div class="font-semibold text-gray-900">{{ order.bundle.display_capacity }}</div>
                         <div class="text-sm text-gray-500 mono">{{ order.bundle.mb }}MB</div>
+                        {% else %}
+                        <div class="font-semibold text-gray-900">Bundle Deleted</div>
+                        {% endif %}
                     </td>
                     <td>
-                        <div class="amount-display mono">GH₵{{ order.amount }}</div>
+                        <div class="amount-display mono">GH₵{{ order.amount|floatformat:2 }}</div>
                     </td>
                     <td>
                         <div class="font-medium text-gray-700">
                             {% if order.payment_method == 'wallet' %}
-                                 Wallet
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                                    </svg>
+                                    Wallet
+                                </span>
                             {% elif order.payment_method == 'mobile_money' %}
-                                 MoMo
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                    MoMo
+                                </span>
                             {% else %}
-                                {{ order.get_payment_method_display }}
+                                {{ order.payment_method|title }}
                             {% endif %}
                         </div>
+                        {% if order.paid_from_wallet %}
+                        <div class="text-xs text-green-600 mt-1">
+                            ✓ Paid from wallet
+                        </div>
+                        {% endif %}
                     </td>
                     <td>
                         {% if order.status == 'pending' %}
-                            <span class="badge badge-pending">Pending</span>
+                            <span class="badge badge-pending">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1"></span>
+                                Pending
+                            </span>
                         {% elif order.status == 'processing' %}
-                            <span class="badge badge-processing">Processing</span>
+                            <span class="badge badge-processing">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1 animate-pulse"></span>
+                                Processing
+                            </span>
                         {% elif order.status == 'successful' %}
-                            <span class="badge badge-successful">Successful</span>
+                            <span class="badge badge-successful">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1"></span>
+                                Successful
+                            </span>
                         {% elif order.status == 'failed' %}
-                            <span class="badge badge-failed">Failed</span>
+                            <span class="badge badge-failed">
+                                <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1"></span>
+                                Failed
+                            </span>
                         {% elif order.status == 'refunded' %}
-                            <span class="badge badge-refunded">Refunded</span>
+                            <span class="badge badge-refunded">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-500 mr-1"></span>
+                                Refunded
+                            </span>
                         {% endif %}
                     </td>
                     <td>
@@ -493,19 +579,26 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <a href="#" class="btn btn-view" title="View Details">
+                            <a href="{% url 'users:admin-order-detail' order.id %}" class="btn btn-view" title="View Details">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                 </svg>
                                 View
                             </a>
-                            <a href="#" class="btn btn-process" title="Process Order">
+                            {% if order.status == 'pending' %}
+                            <a href="{% url 'users:admin-order-detail' order.id %}" class="btn btn-process" title="Process Order">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                 </svg>
                                 Process
                             </a>
+                            {% endif %}
+                            {% if order.transaction_reference %}
+                            <div class="text-xs text-gray-400 mt-1 mono">
+                                Ref: {{ order.transaction_reference|slice:":12" }}
+                            </div>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -516,8 +609,8 @@
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
-                            <p class="text-xl font-bold mb-2">No Pending Orders</p>
-                            <p class="text-sm">All orders have been processed successfully! 🎉</p>
+                            <p class="text-xl font-bold mb-2">No Orders Found</p>
+                            <p class="text-sm">There are no orders in the system yet.</p>
                         </div>
                     </td>
                 </tr>
@@ -525,5 +618,124 @@
             </tbody>
         </table>
     </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination-container">
+        <div class="pagination-info">
+            Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} orders
+        </div>
+        <div class="pagination-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}" class="pagination-link" title="First">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                    </svg>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}" class="pagination-link">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+            {% else %}
+                <span class="pagination-link disabled">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+                    </svg>
+                </span>
+                <span class="pagination-link disabled">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </span>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <span class="pagination-link active">{{ num }}</span>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}" class="pagination-link">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}" class="pagination-link">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}" class="pagination-link" title="Last">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                    </svg>
+                </a>
+            {% else %}
+                <span class="pagination-link disabled">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </span>
+                <span class="pagination-link disabled">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                    </svg>
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<script>
+    function filterOrders(filter) {
+        // Remove active class from all filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Add active class to clicked tab
+        event.target.classList.add('active');
+        
+        // Get all order rows
+        const rows = document.querySelectorAll('tbody tr[data-status]');
+        
+        rows.forEach(row => {
+            const status = row.dataset.status;
+            
+            if (filter === 'all') {
+                row.style.display = '';
+            } else {
+                row.style.display = status === filter ? '' : 'none';
+            }
+        });
+        
+        // Show empty state if no rows visible
+        const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none').length;
+        const emptyStateRow = document.querySelector('.empty-state')?.closest('tr');
+        if (emptyStateRow) {
+            emptyStateRow.style.display = visibleRows === 0 ? '' : 'none';
+        }
+        
+        // Update URL with filter parameter for pagination
+        const url = new URL(window.location);
+        url.searchParams.set('filter', filter);
+        window.history.pushState({}, '', url);
+    }
+
+    // Set active filter tab based on URL parameter on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const filter = urlParams.get('filter');
+        if (filter) {
+            const activeTab = Array.from(document.querySelectorAll('.filter-tab')).find(tab => 
+                tab.textContent.toLowerCase().includes(filter)
+            );
+            if (activeTab) {
+                document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+                activeTab.classList.add('active');
+                filterOrders(filter);
+            }
+        }
+    });
+</script>
 {% endblock %}

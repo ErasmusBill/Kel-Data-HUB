@@ -1,3 +1,7 @@
+from math import log
+from time import timezone
+import time
+from turtle import st
 from django.shortcuts import render, redirect,get_object_or_404,resolve_url
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
@@ -11,10 +15,22 @@ from kelhub.models import Wallet
 from .models import CustomUser, Profile, ResetPasswordToken
 from .utils import send_email
 from users.utils import send_email
+from kelhub.models import Order
 from django.urls import reverse
-from django.db.models import Q
-
+from django.db.models import Q,Sum
+from django.utils.timezone import now
+from datetime import date, datetime
+from datetime import timedelta
 import logging
+from django.contrib.auth.models import Permission
+from django.core.exceptions import PermissionDenied
+from django.utils import timezone
+from datetime import timedelta
+from .forms import AdminOrderUpdateForm
+from django.core.paginator import Paginator
+
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +126,7 @@ def login_user(request):
         messages.success(request, f"Welcome back, {user.first_name}!")
             
         if user.role == 'admin': # type: ignore
-                return redirect("user:admin-dashboard")  
+                return redirect("users:admin-dashboard")  
         elif user.role == 'customer': # type: ignore
                 return redirect("kelhub:dashboard")
             
@@ -356,9 +372,101 @@ def reset_password(request, token):
         return redirect("users:reset_password_request")
     
 @login_required
-def admin_dashboard(request):
-    return render(request,"users/admin_dashboard.html")
+def admin_dashboard_view(request):
+    """
+    Admin dashboard displaying all pending orders.
+    Only accessible to staff members.
+    """
+    if request.user.role != 'admin':
+        raise PermissionDenied("You do not have permission to access this page.")
 
+ 
+    pending_orders = Order.objects.filter(status='pending').select_related('user', 'network', 'bundle').order_by('-created_at')
+    
+   
+    processing_orders = Order.objects.filter(status='processing').select_related('user', 'network', 'bundle')
+    
+
+    today = timezone.now().date()
+    today_orders = Order.objects.filter(created_at__date=today)
+    
+   
+    total_amount = pending_orders.aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+    
+    context = {
+        'pending_orders': pending_orders,
+        'processing_orders': processing_orders,
+        'today_orders': today_orders,
+        'total_amount': total_amount,
+    }
+    
+    return render(request, 'users/admin_dashboard.html', context)
+
+@login_required
+def admin_order_detail_view(request, order_id):
+    """
+    Admin view for order details.
+    Only accessible to staff members.
+    """
+    if request.user.role != 'admin':
+        raise PermissionDenied("You do not have permission to access this page.")
+    
+    order = get_object_or_404(Order, id=order_id)
+    
+    if request.method == 'POST':
+        form = AdminOrderUpdateForm(request.POST, instance=order)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Order status updated successfully.")
+            return redirect('users:admin_dashboard')
+    else:
+        form = AdminOrderUpdateForm(instance=order)
+    
+    context = {
+        'order': order,
+        'form': form,
+    }
+    
+    return render(request, 'users/admin_order_detail.html', context)
+
+@login_required
+def list_all_orders(request):
+    if request.user.role != 'admin':
+        raise PermissionDenied("You do not have permission to access this page.")
+    
+    today = timezone.now().date()
+    orders = Order.objects.all().select_related('user', 'network', 'bundle').order_by('-created_at')
+    
+    paginator = Paginator(orders, 10)  
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+    }
+    
+    return render(request, 'users/list_orders.html', context)
+
+
+@login_required
+def delete_order(request, order_id):
+    if request.user.role != 'admin':
+        raise PermissionDenied("You do not have permission to access this page.")
+    
+    order = get_object_or_404(Order, id=order_id)
+    
+    if request.method == 'POST':
+        order.delete()
+        messages.success(request, "Order deleted successfully.")
+        return redirect('users:list_all_orders')
+    
+    context = {
+        'order': order,
+    }
+    
+    return render(request, 'users/delete_order.html', context)
 
 
 def display_data_plans_view(request, network):
