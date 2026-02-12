@@ -102,9 +102,12 @@ def login_user(request):
      
         user = authenticate(request, username=username, password=password)
         
-        if user is not None:
-            login(request, user) 
-            messages.success(request, f"Welcome back, {user.first_name}!")
+        if user is None:
+            messages.error(request, "Invalid username or password")
+            return redirect("users:login")
+
+        login(request, user)
+        messages.success(request, f"Welcome back, {user.first_name}!")
             
         if user.role == 'admin': # type: ignore
                 return redirect("user:admin-dashboard")  
